@@ -17,10 +17,26 @@ function createStacked(data, endDate, startDate) {
     let keys        = _.map(data, 'state');
 
     let x           = d3.scaleTime().domain([d3DateParse(startDate), d3DateParse(endDate)]).range([0, width]);
+    let defaultx    = d3.scaleTime().domain([d3DateParse(startDate), d3DateParse(endDate)]).range([0, width]);
     let y           = d3.scaleLinear().domain([-maxData, maxData]).range([height, 0]);
+
+    // let xAxis       = d3.axisTop(x).tickSize(12).tickFormat(d3.timeFormat('%b %Y'));
+    let xAxis       = d3.axisTop(x).tickSize(12);
 
     let positiveArea    = d3.area().x((o) => (x(d3DateParse(o.date)))).y0((o) => (y(o.y0))).y1((o) => (y(o.y1)));
     let negativeArea    = d3.area().x((o) => (x(d3DateParse(o.date)))).y0((o) => (y(-o.y0))).y1((o) => (y(-o.y1)));
+
+    var zoom = d3.zoom()
+        .scaleExtent([1, 10])
+        .translateExtent([[0, 0], [width, height]])
+        .on("zoom", () => {
+            var transform = d3.event.transform;
+            x.domain(transform.rescaleX(defaultx).domain());
+            d3.select(' .center-line ').call(xAxis);
+            d3.selectAll(' path.positive-layer ').attr('d', (d) => (positiveArea(d.data)));
+            d3.selectAll(' path.negative-layer ').attr('d', (d) => (negativeArea(d.data)));
+
+        });
 
     var svg = d3.select(' #stacked-chart ').append('svg')
         .attr('id', 'stacked-svg')
@@ -28,6 +44,7 @@ function createStacked(data, endDate, startDate) {
         .attr('height', height + legendHgt);
 
     svg.append('g')
+        .attr('id', 'positive-container')
         .selectAll('.positive-layer')
         .data(data)
         .enter().append('path')
@@ -35,6 +52,7 @@ function createStacked(data, endDate, startDate) {
             .attr('d', (d) => (positiveArea(d.data)));
 
     svg.append('g')
+        .attr('id', 'negative-container')
         .selectAll('.negative-layer')
         .data(data)
         .enter().append('path')
@@ -46,11 +64,18 @@ function createStacked(data, endDate, startDate) {
         .attr('class', 'center-line')
         .attr('transform', 'translate(0,' + y(0) + ')')
         .attr('width', width)
-        .call(d3.axisTop(x).tickSize(12).tickFormat(d3.timeFormat('%b %Y')))
+        .call(xAxis)
         .selectAll('text')
-            .attr('dx', 23)
-            .attr('dy', 12)
-            .attr('class', 'noselect cursor-default');;
+            // .attr('dx', 23)
+            // .attr('dy', 12)
+            .attr('class', 'noselect cursor-default');
+
+    svg.append('rect')
+        .attr('id', 'zoom-pane')
+        .attr('width', width)
+        .attr('height', height + legendHgt)
+        .attr('transform', 'translate(0,0)')
+        .call(zoom);
 
     var legend  = svg.append('g')
         .attr('id', 'legend-group')
