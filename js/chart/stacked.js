@@ -2,10 +2,10 @@ function createStacked(data, endDate, startDate) {
     d3.select(' #stacked-svg ').remove();
 
     let dateFormat  = "%Y-%m-%_d";
+    let legendHgt   = 30;
     let padding     = { top: 15, right: 15, bottom: 15, left: 15 };
     let width       = $(' #stacked-chart ').outerWidth(true) - padding.right - padding.left;
-    let height      = ($(' #stacked-chart ').outerWidth(true) / 4) - padding.top - padding.bottom;
-    let legendHgt   = 30;
+    let height      = ($(' #wrapper ').outerHeight(true) - $(' #swimlane-container ').outerHeight() - $(' #radio-container ').outerHeight()) - padding.top - padding.bottom - legendHgt;
 
     $(' #stacked-chart ').width(width);
     $(' #stacked-chart ').height(height + legendHgt);
