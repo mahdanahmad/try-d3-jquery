@@ -2,7 +2,7 @@ function createSwimlane(data) {
     let dateFormat  = "%Y-%m-%_d";
     let padding     = { top: 5, right: 15, bottom: 0, left: 15 };
     let width       = $(' #swimlane-container ').outerWidth(true) - padding.right - padding.left;
-    let height      = $(' #swimlane-container ').outerHeight(true) - padding.top - padding.bottom;
+    let height      = ($(' #wrapper ').outerHeight(true) / 3) - padding.top - padding.bottom;
 
     let axisHeight  = 20;
     let laneHeight  = 25;
