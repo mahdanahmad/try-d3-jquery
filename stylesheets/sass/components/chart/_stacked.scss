@@ -1,0 +1,28 @@
+#stacked-container {
+    #radio-container {
+        width: 100%; text-align: center; padding: 10px 0px 15px 0px; font-size: 12px;
+        & > label { margin: 0px 15px; }
+    }
+    #stacked-svg {
+        .stacked-layers {
+            &.layer-daily { fill : $bar-clr-daily; }
+            &.layer-weekly { fill : $bar-clr-weekly; }
+            &.layer-monthly { fill : $bar-clr-monthly; }
+            &.layer-yearly { fill : $bar-clr-yearly; }
+        }
+        #legend-group {
+            rect {
+                width: 18px; height: 18px;
+                &.rect-daily { fill : $bar-clr-daily; stroke : $bar-clr-daily; }
+                &.rect-weekly { fill : $bar-clr-weekly; stroke : $bar-clr-weekly; }
+                &.rect-monthly { fill : $bar-clr-monthly; stroke : $bar-clr-monthly; }
+                &.rect-yearly { fill : $bar-clr-yearly; stroke : $bar-clr-yearly; }
+            }
+        }
+        #zoom-pane {
+            fill: none;
+            pointer-events: all;
+            cursor: -webkit-grab;
+        }
+    }
+}
