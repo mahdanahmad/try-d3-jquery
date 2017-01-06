@@ -1,0 +1,10 @@
+@mixin clearfix {
+    &:before, &:after { content: " "; display: table; }
+    &:after { clear: both; }
+}
+
+@mixin widht-height-ratio($ratio, $top:0, $bottom:0, $right:0, $left:0) {
+    position: relative;
+    &:before { content: ""; display: block; padding-top: $ratio; }
+    & > div { position: absolute; top : $top; bottom : $bottom; right : $right; left : $left; }
+}
