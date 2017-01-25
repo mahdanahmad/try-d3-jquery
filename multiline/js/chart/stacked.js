@@ -1,4 +1,5 @@
 function createStacked(data, endDate, startDate) {
+    // console.log(data);
     d3.select(' #stacked-svg ').remove();
 
     let dateFormat  = "%Y-%m-%_d";
@@ -13,8 +14,12 @@ function createStacked(data, endDate, startDate) {
 
     let d3DateParse = d3.timeParse(dateFormat);
 
-    let maxData     = _.chain(data).find(['state', 'daily']).get('data').maxBy('y1').value().y1;
-    let keys        = _.map(data, 'state');
+    let colors      = ['#BBCDA3', '#055C81', '#B13C3D', '#CCB40C'];
+
+    let keys        = _.chain(data).map('state').sortBy(_.toInteger).value();
+    // let maxData     = _.chain(data).find(['state', 'daily']).get('data').maxBy('y1').value().y1;
+    let maxData     = _.chain(data).map('data').flattenDeep().map('y1').max().value();
+    if (maxData == 0) { maxData++; }
 
     let x           = d3.scaleTime().domain([d3DateParse(startDate), d3DateParse(endDate)]).range([0, width]);
     let defaultx    = d3.scaleTime().domain([d3DateParse(startDate), d3DateParse(endDate)]).range([0, width]);
@@ -43,21 +48,53 @@ function createStacked(data, endDate, startDate) {
         .attr('width', width)
         .attr('height', height + legendHgt);
 
+    // svg.append('g')
+    //     .attr('id', 'positive-container')
+    //     .selectAll('.positive-layer')
+    //     .data(data)
+    //     .enter().append('path')
+    //         .attr('class', (d) => ('positive-layer stacked-layers layer-' + d.state ))
+    //         .attr('d', (d) => (positiveArea(d.data)))
+    //         .attr('fill', (d) => (colors[_.indexOf(keys, d.state)]))
+    //         .attr('stroke', (d) => (colors[_.indexOf(keys, d.state)]));
+    //
+    // svg.append('g')
+    //     .attr('id', 'negative-container')
+    //     .selectAll('.negative-layer')
+    //     .data(data)
+    //     .enter().append('path')
+    //         .attr('class', (d) => ('negative-layer stacked-layers layer-' + d.state ))
+    //         .attr('d', (d) => (negativeArea(d.data)))
+    //         .attr('fill', (d) => (colors[_.indexOf(keys, d.state)]))
+    //         .attr('stroke', (d) => (colors[_.indexOf(keys, d.state)]));
+
+    let barwidth    = width / moment(endDate).diff(moment(startDate), 'days');
     svg.append('g')
-        .attr('id', 'positive-container')
-        .selectAll('.positive-layer')
+        .selectAll("g")
         .data(data)
-        .enter().append('path')
-            .attr('class', (d) => ('positive-layer stacked-layers layer-' + d.state ))
-            .attr('d', (d) => (positiveArea(d.data)));
+        .enter().append("g")
+            .attr("fill", (d) => (colors[_.indexOf(keys, d.state)]))
+            .selectAll("rect")
+            .data((d) => (d.data))
+            .enter().append("rect")
+                .attr("x", (d) => (x(d3DateParse(d.date))))
+                .attr("y", (d) => (y(d.y1)))
+                .attr("height", (d) => (y(d.y0) - y(d.y1)))
+                .attr("width", barwidth);
 
     svg.append('g')
-        .attr('id', 'negative-container')
-        .selectAll('.negative-layer')
+        .selectAll("g")
         .data(data)
-        .enter().append('path')
-            .attr('class', (d) => ('negative-layer stacked-layers layer-' + d.state ))
-            .attr('d', (d) => (negativeArea(d.data)));
+        .enter().append("g")
+            .attr("fill", (d) => (colors[_.indexOf(keys, d.state)]))
+            .selectAll("rect")
+            .data((d) => (d.data))
+            .enter().append("rect")
+                .attr("x", (d) => (x(d3DateParse(d.date))))
+                .attr("y", (d) => (y(d.y0)))
+                .attr("height", (d) => (y(d.y0) - y(d.y1)))
+                .attr("width", barwidth);
+
 
     // centerLine
     svg.append('g')
@@ -70,12 +107,12 @@ function createStacked(data, endDate, startDate) {
             // .attr('dy', 12)
             .attr('class', 'noselect cursor-default');
 
-    svg.append('rect')
-        .attr('id', 'zoom-pane')
-        .attr('width', width)
-        .attr('height', height + legendHgt)
-        .attr('transform', 'translate(0,0)')
-        .call(zoom);
+    // svg.append('rect')
+    //     .attr('id', 'zoom-pane')
+    //     .attr('width', width)
+    //     .attr('height', height + legendHgt)
+    //     .attr('transform', 'translate(0,0)')
+    //     .call(zoom);
 
     var legend  = svg.append('g')
         .attr('id', 'legend-group')
@@ -87,12 +124,13 @@ function createStacked(data, endDate, startDate) {
                 .attr('transform', (o, i) => ('translate(' + (i * (width / 16))  + ', 0)'));
 
     legend.append('rect')
-        .attr('class', (o) => ('rect-' + o));
+        // .attr('class', (o) => ('rect-' + o))
+        .attr('fill', (o) => (colors[_.indexOf(keys, o)]));
 
     legend.append('text')
         .attr('y', 14)
         .attr('x', 23)
         .style('font-size', '12px')
         .attr('class', (o) => ('text-' + o))
-        .text((o) => (_.upperFirst(o)));
+        .text((o) => (_.upperFirst(o) + ' days'));
 }

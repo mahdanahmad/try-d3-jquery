@@ -1,0 +1,23 @@
+#scatter-chart {
+    background: #eee;
+    #scatter-svg {
+        circle.dot {
+            // pointer-events : visible;
+
+            &.dot-daily { fill : $daily-color }
+            &.dot-weekly { fill : $weekly-color }
+            &.dot-monthly { fill : $monthly-color }
+            &.dot-yearly { fill : $yearly-color }
+        }
+        circle#hover-circle {
+            stroke : black;
+            stroke-width : 1.5px;
+            fill : transparent;
+        }
+        path#hover-path-type, path#hover-path-date {
+            stroke : black;
+            fill : none;
+            stroke-width : 1.5px;
+        }
+    }
+}

@@ -78,7 +78,6 @@ function createSwimlane(data) {
     swimlanePath.closePath();
     floorLane.append('path').attr('d', swimlanePath.toString()).attr('id', 'swimlane-lane');
 
-
     floorLane.append('rect')
         .attr('id', 'floor-lane-selected')
         .attr('width', width)
