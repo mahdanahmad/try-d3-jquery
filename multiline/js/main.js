@@ -17,7 +17,7 @@ $(' #swimlane-container ').on('sector-change', (event, sector) => {
     //
     //     createStacked(alldata[radiovalue], endDate, startDate);
     // });
-    $.getJSON('/data/stackedbytags/' + sector + '.json', (result) => {
+    $.getJSON('data/stackedbytags/' + sector + '.json', (result) => {
         alldata     = result.data;
         endDate     = result.endDate;
         startDate   = result.startDate;
@@ -37,6 +37,6 @@ window.onload   = function() {
     $(' #radio-' + _.head(radio)['value'] ).prop('checked',true);
 
     // randomSwimlane((error, swimlane) => { if (!error) { createSwimlane(swimlane); }});
-    $.getJSON('/data/swimlanebytags.json', (result) => { createSwimlane(result) });
+    $.getJSON('data/swimlanebytags.json', (result) => { createSwimlane(result) });
 
 };
