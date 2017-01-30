@@ -14,7 +14,7 @@ function createStacked(data, endDate, startDate) {
 
     let d3DateParse = d3.timeParse(dateFormat);
 
-    let colors      = ['#BBCDA3', '#055C81', '#B13C3D', '#CCB40C'];
+    let colors      = ['#BBCDA3', '#055C81', '#B13C3D', '#CCB40C', '#DA9F93'];
 
     let keys        = _.chain(data).map('state').sortBy(_.toInteger).value();
     // let maxData     = _.chain(data).find(['state', 'daily']).get('data').maxBy('y1').value().y1;
@@ -116,7 +116,7 @@ function createStacked(data, endDate, startDate) {
 
     var legend  = svg.append('g')
         .attr('id', 'legend-group')
-        .attr('transform', 'translate(' + (width * 3 / 4) + ', ' + (height + legendHgt - 20) + ')')
+        .attr('transform', 'translate(' + (width * 2 / 3) + ', ' + (height + legendHgt - 20) + ')')
         .selectAll('.legend')
             .data(keys)
             .enter().append('g')
