@@ -17,7 +17,7 @@ function createStacked(data, endDate, startDate) {
     let colors      = ['#BBCDA3', '#055C81', '#B13C3D', '#CCB40C', '#DA9F93'];
 
     let keys        = _.chain(data).map('state').sortBy(_.toInteger).value();
-    // let maxData     = _.chain(data).find(['state', 'daily']).get('data').maxBy('y1').value().y1;
+    let activeKeys  = _.clone(keys);
     let maxData     = _.chain(data).map('data').flattenDeep().map('y1').max().value();
     if (maxData == 0) { maxData++; }
 
@@ -74,27 +74,30 @@ function createStacked(data, endDate, startDate) {
         .data(data)
         .enter().append("g")
             .attr("fill", (d) => (colors[_.indexOf(keys, d.state)]))
+            .attr("class", (d) => ('group-' + d.state))
             .selectAll("rect")
             .data((d) => (d.data))
             .enter().append("rect")
                 .attr("x", (d) => (x(d3DateParse(d.date))))
                 .attr("y", (d) => (y(d.y1)))
                 .attr("height", (d) => (y(d.y0) - y(d.y1)))
-                .attr("width", barwidth);
+                .attr("width", barwidth)
+                .attr('shape-rendering', 'crispEdges');
 
     svg.append('g')
         .selectAll("g")
         .data(data)
         .enter().append("g")
             .attr("fill", (d) => (colors[_.indexOf(keys, d.state)]))
+            .attr("class", (d) => ('group-' + d.state))
             .selectAll("rect")
             .data((d) => (d.data))
             .enter().append("rect")
                 .attr("x", (d) => (x(d3DateParse(d.date))))
                 .attr("y", (d) => (y(d.y0)))
                 .attr("height", (d) => (y(d.y0) - y(d.y1)))
-                .attr("width", barwidth);
-
+                .attr("width", barwidth)
+                .attr('shape-rendering', 'crispEdges');
 
     // centerLine
     svg.append('g')
@@ -124,8 +127,21 @@ function createStacked(data, endDate, startDate) {
                 .attr('transform', (o, i) => ('translate(' + (i * (width / 16))  + ', 0)'));
 
     legend.append('rect')
-        // .attr('class', (o) => ('rect-' + o))
-        .attr('fill', (o) => (colors[_.indexOf(keys, o)]));
+        .attr('class', (o) => ('rect-' + o))
+        .attr('fill', (o) => (colors[_.indexOf(keys, o)]))
+        .attr('stroke', (o) => (colors[_.indexOf(keys, o)]))
+        .attr('stroke-width', '1.5px')
+        .on('click', (d) => {
+            console.log($( '.rect-' + d ).hasClass( 'fill-none' ));
+            if ($( '.rect-' + d ).hasClass( 'fill-none' )) {
+                $( '.rect-' + d ).removeClass( 'fill-none' );
+                $( '.group-' + d ).removeClass( 'fill-none' );
+            } else {
+                $( '.rect-' + d ).addClass( 'fill-none' );
+                $( '.group-' + d ).addClass( 'fill-none' );
+            }
+
+        });
 
     legend.append('text')
         .attr('y', 14)

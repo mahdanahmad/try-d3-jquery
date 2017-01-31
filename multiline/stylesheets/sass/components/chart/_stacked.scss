@@ -4,21 +4,15 @@
         & > label { margin: 0px 15px; }
     }
     #stacked-svg {
-        .stacked-layers {
-            &.layer-daily { fill : $bar-clr-daily; }
-            &.layer-weekly { fill : $bar-clr-weekly; }
-            &.layer-monthly { fill : $bar-clr-monthly; }
-            &.layer-yearly { fill : $bar-clr-yearly; }
+        .fill-none {
+            fill : transparent!important;
         }
+
+
         #legend-group {
-            rect {
-                width: 18px; height: 18px;
-                &.rect-daily { fill : $bar-clr-daily; stroke : $bar-clr-daily; }
-                &.rect-weekly { fill : $bar-clr-weekly; stroke : $bar-clr-weekly; }
-                &.rect-monthly { fill : $bar-clr-monthly; stroke : $bar-clr-monthly; }
-                &.rect-yearly { fill : $bar-clr-yearly; stroke : $bar-clr-yearly; }
-            }
+            rect { width: 18px; height: 18px; cursor: pointer; }
         }
+
         #zoom-pane {
             fill: none;
             pointer-events: all;

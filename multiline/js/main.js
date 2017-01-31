@@ -22,7 +22,7 @@ $(' #swimlane-container ').on('sector-change', (event, sector) => {
         endDate     = result.endDate;
         startDate   = result.startDate;
 
-        createStacked(alldata[radiovalue], endDate, startDate);
+        createStacked(alldata[radiovalue], result.endDate, result.startDate);
     });
 });
 
