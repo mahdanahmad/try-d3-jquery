@@ -1,6 +1,6 @@
-function createStacked(data, endDate, startDate) {
-    // console.log(data);
+function createStacked(data, endDate, startDate, keys, activeKeys) {
     d3.select(' #stacked-svg ').remove();
+    // let data    = _.chain(raw_data).map((o) => ({date : o['date'], data : _.filter(o['data'], (d) => (_.includes(activeKeys, d['freq'])))})).value()
 
     let dateFormat  = "%Y-%m-%_d";
     let legendHgt   = 30;
@@ -16,16 +16,13 @@ function createStacked(data, endDate, startDate) {
 
     let colors      = ['#BBCDA3', '#055C81', '#B13C3D', '#CCB40C', '#DA9F93'];
 
-    let keys        = _.chain(data).map('state').sortBy(_.toInteger).value();
-    let activeKeys  = _.clone(keys);
-    let maxData     = _.chain(data).map('data').flattenDeep().map('y1').max().value();
+    let maxData     = _.chain(data).map((o) => (_.chain(o).get('data').map('val').sum().value())).max().value();
     if (maxData == 0) { maxData++; }
 
     let x           = d3.scaleTime().domain([d3DateParse(startDate), d3DateParse(endDate)]).range([0, width]);
     let defaultx    = d3.scaleTime().domain([d3DateParse(startDate), d3DateParse(endDate)]).range([0, width]);
     let y           = d3.scaleLinear().domain([-maxData, maxData]).range([height, 0]);
 
-    // let xAxis       = d3.axisTop(x).tickSize(12).tickFormat(d3.timeFormat('%b %Y'));
     let xAxis       = d3.axisTop(x).tickSize(12);
 
     let positiveArea    = d3.area().x((o) => (x(d3DateParse(o.date)))).y0((o) => (y(o.y0))).y1((o) => (y(o.y1)));
@@ -69,35 +66,50 @@ function createStacked(data, endDate, startDate) {
     //         .attr('stroke', (d) => (colors[_.indexOf(keys, d.state)]));
 
     let barwidth    = width / moment(endDate).diff(moment(startDate), 'days');
-    svg.append('g')
+    svg.append("g")
         .selectAll("g")
         .data(data)
         .enter().append("g")
-            .attr("fill", (d) => (colors[_.indexOf(keys, d.state)]))
-            .attr("class", (d) => ('group-' + d.state))
+            .attr("transform", (d) => ("translate(" + x(d3DateParse(d.date)) + ",0)"))
             .selectAll("rect")
-            .data((d) => (d.data))
+            .data((d) => (_.chain(d.data).filter((o) => (_.includes(activeKeys, o['freq']))).reduce((res, val) => {let prev = res.length > 0 ? res[res.length - 1]['curr'] : 0; res.push({prev : prev, curr : val['val'] + prev, freq : val['freq']}); return res;}, []).value()))
             .enter().append("rect")
-                .attr("x", (d) => (x(d3DateParse(d.date))))
-                .attr("y", (d) => (y(d.y1)))
-                .attr("height", (d) => (y(d.y0) - y(d.y1)))
+                .attr("x", 0)
+                .attr("y", (d) => (y(d.curr)))
+                .attr("height", (d) => (y(d.prev) - y(d.curr)))
                 .attr("width", barwidth)
-                .attr('shape-rendering', 'crispEdges');
+                .attr("fill", (d) => (colors[_.indexOf(keys, d.freq)]))
+                .attr("shape-rendering", "crispEdges");
 
-    svg.append('g')
+    svg.append("g")
         .selectAll("g")
         .data(data)
         .enter().append("g")
-            .attr("fill", (d) => (colors[_.indexOf(keys, d.state)]))
-            .attr("class", (d) => ('group-' + d.state))
+            .attr("transform", (d) => ("translate(" + x(d3DateParse(d.date)) + ",0)"))
             .selectAll("rect")
-            .data((d) => (d.data))
+            .data((d) => (_.chain(d.data).filter((o) => (_.includes(activeKeys, o['freq']))).reduce((res, val) => {let prev = res.length > 0 ? res[res.length - 1]['curr'] : 0; res.push({prev : prev, curr : val['val'] + prev, freq : val['freq']}); return res;}, []).value()))
             .enter().append("rect")
-                .attr("x", (d) => (x(d3DateParse(d.date))))
-                .attr("y", (d) => (y(d.y0)))
-                .attr("height", (d) => (y(d.y0) - y(d.y1)))
+                .attr("x", 0)
+                .attr("y", (d) => (y(-d.prev)))
+                .attr("height", (d) => (y(d.prev) - y(d.curr)))
                 .attr("width", barwidth)
-                .attr('shape-rendering', 'crispEdges');
+                .attr("fill", (d) => (colors[_.indexOf(keys, d.freq)]))
+                .attr("shape-rendering", "crispEdges");
+
+    // svg.append("g")
+    //     .selectAll("g")
+    //     .data(data)
+    //     .enter().append("g")
+    //         .attr("fill", (d) => (colors[_.indexOf(keys, d.state)]))
+    //         .attr("class", (d) => ('group-' + d.state))
+    //         .selectAll("rect")
+    //         .data((d) => (d.data))
+    //         .enter().append("rect")
+    //             .attr("x", (d) => (x(d3DateParse(d.date))))
+    //             .attr("y", (d) => (y(d.y0)))
+    //             .attr("height", (d) => (y(d.y0) - y(d.y1)))
+    //             .attr("width", barwidth)
+    //             .attr('shape-rendering', 'crispEdges');
 
     // centerLine
     svg.append('g')
@@ -127,18 +139,17 @@ function createStacked(data, endDate, startDate) {
                 .attr('transform', (o, i) => ('translate(' + (i * (width / 16))  + ', 0)'));
 
     legend.append('rect')
-        .attr('class', (o) => ('rect-' + o))
+        .attr('class', (o) => ('rect-' + o + (_.includes(activeKeys, o) ? '' : ' fill-none')))
         .attr('fill', (o) => (colors[_.indexOf(keys, o)]))
         .attr('stroke', (o) => (colors[_.indexOf(keys, o)]))
         .attr('stroke-width', '1.5px')
         .on('click', (d) => {
-            console.log($( '.rect-' + d ).hasClass( 'fill-none' ));
             if ($( '.rect-' + d ).hasClass( 'fill-none' )) {
                 $( '.rect-' + d ).removeClass( 'fill-none' );
-                $( '.group-' + d ).removeClass( 'fill-none' );
+                $(' #chart-container ').trigger('keys-change', ['add', d]);
             } else {
                 $( '.rect-' + d ).addClass( 'fill-none' );
-                $( '.group-' + d ).addClass( 'fill-none' );
+                $(' #chart-container ').trigger('keys-change', ['remove', d]);
             }
 
         });
