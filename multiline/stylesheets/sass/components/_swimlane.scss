@@ -6,7 +6,7 @@
     #swimlane-lane {
         stroke : $swimlane-color; stroke-width : $swimlane-width;
     }
-    #floor-lane-selected {
+    .floor-lane-selected {
         fill : $swimlane-sel-clr;
         fill-opacity : $swimlane-sel-opac;
     }

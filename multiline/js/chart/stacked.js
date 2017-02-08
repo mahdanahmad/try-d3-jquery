@@ -1,6 +1,10 @@
-function createStacked(data, endDate, startDate, keys, activeKeys) {
+function createStacked(data, radiovalue, keys, activeKeys) {
     d3.select(' #stacked-svg ').remove();
-    // let data    = _.chain(raw_data).map((o) => ({date : o['date'], data : _.filter(o['data'], (d) => (_.includes(activeKeys, d['freq'])))})).value()
+
+    let datasets    = _.chain(data).flatMap('d');
+    let startDate   = datasets.map('s').uniq().minBy((o) => (new Date(o))).value();
+    let endDate     = datasets.map('e').uniq().maxBy((o) => (new Date(o))).value();
+
 
     let dateFormat  = "%Y-%m-%_d";
     let legendHgt   = 30;
@@ -16,59 +20,42 @@ function createStacked(data, endDate, startDate, keys, activeKeys) {
 
     let colors      = ['#BBCDA3', '#055C81', '#B13C3D', '#CCB40C', '#DA9F93'];
 
-    let maxData     = _.chain(data).map((o) => (_.chain(o).get('data').map('val').sum().value())).max().value();
-    if (maxData == 0) { maxData++; }
+    let timeline    = [];
+    let maxData     = 0;
+    async.map(datasets.value(), (o, callback) => {
+        async.times(moment(o.e).diff(o.s, 'days'), (d, next) => {
+            let currentDate = moment(o.s).add(d, 'd').format('YYYY-MM-DD');
+            switch (radiovalue) {
+                case 'rows': next(null, {date : currentDate, freq : o.f, val : o.r}); break;
+                case 'filesize': next(null, {date : currentDate, freq : o.f, val : o.z}); break;
+                default: next(null, {date : currentDate, freq : o.f, val : 1});
+            }
+        }, function(err, results) {
+            callback(null, results);
+        });
+    }, (err, results) => {
+        let chained = _.chain(results).flatten().groupBy('date');
+        timeline    = chained.map((val, key) => ({date : key, data : _.chain(val).groupBy('freq').map((fval, fkey) => ({freq : parseInt(fkey), val : _.sumBy(fval, 'val')})).value()})).value();
+        maxData     = chained.map((o) => (_.sumBy(o, 'val'))).max().value();
+        if (maxData == 0) { maxData++; }
+
+    });
 
     let x           = d3.scaleTime().domain([d3DateParse(startDate), d3DateParse(endDate)]).range([0, width]);
-    let defaultx    = d3.scaleTime().domain([d3DateParse(startDate), d3DateParse(endDate)]).range([0, width]);
+    // let defaultx    = d3.scaleTime().domain([d3DateParse(startDate), d3DateParse(endDate)]).range([0, width]);
     let y           = d3.scaleLinear().domain([-maxData, maxData]).range([height, 0]);
 
     let xAxis       = d3.axisTop(x).tickSize(12);
-
-    let positiveArea    = d3.area().x((o) => (x(d3DateParse(o.date)))).y0((o) => (y(o.y0))).y1((o) => (y(o.y1)));
-    let negativeArea    = d3.area().x((o) => (x(d3DateParse(o.date)))).y0((o) => (y(-o.y0))).y1((o) => (y(-o.y1)));
-
-    var zoom = d3.zoom()
-        .scaleExtent([1, 10])
-        .translateExtent([[0, 0], [width, height]])
-        .on("zoom", () => {
-            var transform = d3.event.transform;
-            x.domain(transform.rescaleX(defaultx).domain());
-            d3.select(' .center-line ').call(xAxis);
-            d3.selectAll(' path.positive-layer ').attr('d', (d) => (positiveArea(d.data)));
-            d3.selectAll(' path.negative-layer ').attr('d', (d) => (negativeArea(d.data)));
-
-        });
 
     var svg = d3.select(' #stacked-chart ').append('svg')
         .attr('id', 'stacked-svg')
         .attr('width', width)
         .attr('height', height + legendHgt);
 
-    // svg.append('g')
-    //     .attr('id', 'positive-container')
-    //     .selectAll('.positive-layer')
-    //     .data(data)
-    //     .enter().append('path')
-    //         .attr('class', (d) => ('positive-layer stacked-layers layer-' + d.state ))
-    //         .attr('d', (d) => (positiveArea(d.data)))
-    //         .attr('fill', (d) => (colors[_.indexOf(keys, d.state)]))
-    //         .attr('stroke', (d) => (colors[_.indexOf(keys, d.state)]));
-    //
-    // svg.append('g')
-    //     .attr('id', 'negative-container')
-    //     .selectAll('.negative-layer')
-    //     .data(data)
-    //     .enter().append('path')
-    //         .attr('class', (d) => ('negative-layer stacked-layers layer-' + d.state ))
-    //         .attr('d', (d) => (negativeArea(d.data)))
-    //         .attr('fill', (d) => (colors[_.indexOf(keys, d.state)]))
-    //         .attr('stroke', (d) => (colors[_.indexOf(keys, d.state)]));
-
     let barwidth    = width / moment(endDate).diff(moment(startDate), 'days');
     svg.append("g")
         .selectAll("g")
-        .data(data)
+        .data(timeline)
         .enter().append("g")
             .attr("transform", (d) => ("translate(" + x(d3DateParse(d.date)) + ",0)"))
             .selectAll("rect")
@@ -83,7 +70,7 @@ function createStacked(data, endDate, startDate, keys, activeKeys) {
 
     svg.append("g")
         .selectAll("g")
-        .data(data)
+        .data(timeline)
         .enter().append("g")
             .attr("transform", (d) => ("translate(" + x(d3DateParse(d.date)) + ",0)"))
             .selectAll("rect")
@@ -96,21 +83,6 @@ function createStacked(data, endDate, startDate, keys, activeKeys) {
                 .attr("fill", (d) => (colors[_.indexOf(keys, d.freq)]))
                 .attr("shape-rendering", "crispEdges");
 
-    // svg.append("g")
-    //     .selectAll("g")
-    //     .data(data)
-    //     .enter().append("g")
-    //         .attr("fill", (d) => (colors[_.indexOf(keys, d.state)]))
-    //         .attr("class", (d) => ('group-' + d.state))
-    //         .selectAll("rect")
-    //         .data((d) => (d.data))
-    //         .enter().append("rect")
-    //             .attr("x", (d) => (x(d3DateParse(d.date))))
-    //             .attr("y", (d) => (y(d.y0)))
-    //             .attr("height", (d) => (y(d.y0) - y(d.y1)))
-    //             .attr("width", barwidth)
-    //             .attr('shape-rendering', 'crispEdges');
-
     // centerLine
     svg.append('g')
         .attr('class', 'center-line')
@@ -121,13 +93,6 @@ function createStacked(data, endDate, startDate, keys, activeKeys) {
             // .attr('dx', 23)
             // .attr('dy', 12)
             .attr('class', 'noselect cursor-default');
-
-    // svg.append('rect')
-    //     .attr('id', 'zoom-pane')
-    //     .attr('width', width)
-    //     .attr('height', height + legendHgt)
-    //     .attr('transform', 'translate(0,0)')
-    //     .call(zoom);
 
     var legend  = svg.append('g')
         .attr('id', 'legend-group')

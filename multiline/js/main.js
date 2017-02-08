@@ -4,35 +4,26 @@ let radio       = [
     { title : 'Filesize (in KB)', value : 'filesize' },
 ];
 
-let alldata     = {};
-let endDate     = "";
-let startDate   = "";
 let frequencies = [];
 let activeFreq  = [];
+let activeSec   = [];
+
+let rawdata     = [];
 
 let exclude     = ['China']
 
 let baseURL     = "http://localhost:5000/";
 
-$(' #swimlane-container ').on('sector-change', (event, sector) => {
+$(' #swimlane-container ').on('sector-change', (event, state, sector) => {
     let radiovalue  = $(' input[name=radio-graph]:checked ', ' #radio-container ').val();
-    // sector          = 'ipc';
 
-    // let params      = {
-    //     tag         : sector,
-    //     exclude     : JSON.stringify(exclude),
-    //     frequencies : JSON.stringify(frequencies),
-    //     datatype    : radiovalue
-    // }
+    if (state == 'add') {
+        activeSec.push(sector);
+    } else if (state == 'remove') {
+        _.pull(activeSec, sector);
+    }
 
-    // $.getJSON(baseURL + 'stacked?' + jQuery.param(params), (result) => {
-    $.getJSON('data/stackedbytags/' + sector + '.json', (result) => {
-        alldata     = result.data;
-        endDate     = result.endDate;
-        startDate   = result.startDate;
-
-        createStacked(alldata[radiovalue], result.endDate, result.startDate, frequencies, activeFreq);
-    });
+    createStacked(_.filter(raw_data, (o) => (_.intersection(activeSec, o.t).length > 0)), radiovalue, frequencies, activeFreq);
 });
 
 $(' #chart-container ').on('keys-change', (event, state, key) => {
@@ -43,12 +34,12 @@ $(' #chart-container ').on('keys-change', (event, state, key) => {
     }
 
     let radiovalue  = $(' input[name=radio-graph]:checked ', ' #radio-container ').val();
-    createStacked(alldata[radiovalue], endDate, startDate, frequencies, activeFreq);
+    createStacked(_.filter(raw_data, (o) => (_.intersection(activeSec, o.t).length > 0)), radiovalue, frequencies, activeFreq);
 });
 
 $(' #radio-container ').change(() => {
     let radiovalue  = $(' input[name=radio-graph]:checked ', ' #radio-container ').val();
-    createStacked(alldata[radiovalue], endDate, startDate, frequencies, activeFreq);
+    createStacked(_.filter(raw_data, (o) => (_.intersection(activeSec, o.t).length > 0)), radiovalue, frequencies, activeFreq);
 });
 
 window.onload   = function() {
@@ -56,7 +47,11 @@ window.onload   = function() {
     $(' #radio-container ').append(stringRadio);
     $(' #radio-' + _.head(radio)['value'] ).prop('checked',true);
 
-    // $.getJSON(baseURL + 'swimlane?exclude=' + JSON.stringify(exclude), (result) => { frequencies = result.avail_freq; createSwimlane(result) });
-    $.getJSON('data/swimlanebytags.json', (result) => { frequencies = _(result.frequencies).uniq().sortBy(_.toInteger).value(); activeFreq = _.clone(frequencies), createSwimlane(result) });
+    $.getJSON('data/result.json', (result) => {
+        raw_data    = _.filter(result, (o) => (_.size(o.d) > 0));
+        frequencies = _.chain(result).flatMap('d').map('f').uniq().sortBy(_.toInteger).value();
+        activeFreq  = _.clone(frequencies);
 
+        createSwimlane(result);
+    });
 };
