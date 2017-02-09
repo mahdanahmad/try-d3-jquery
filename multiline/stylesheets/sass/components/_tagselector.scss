@@ -1,4 +1,4 @@
-#swimlane-container {
+#tagselector-container {
     // height: $swimlane-height; width: 100%;
     #separator-line {
         stroke : $swimlane-separator;
@@ -9,5 +9,8 @@
     .floor-lane-selected {
         fill : $swimlane-sel-clr;
         fill-opacity : $swimlane-sel-opac;
+    }
+    circle.nodes-selected {
+        fill : #aec7e8!important;
     }
 }

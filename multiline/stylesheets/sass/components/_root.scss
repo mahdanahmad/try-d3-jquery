@@ -1,4 +1,14 @@
-@import "swimlane";
+@import "tagselector";
 @import "chart/chart";
 
 #wrapper { height: 100%; margin: 0px; padding: 0px; overflow: hidden; }
+#tagselector-changer {
+    position: relative;
+    left: 20px;
+    font-size: 12px;
+    cursor: pointer;
+    display: inline-block;
+    padding: 5px;
+    border: 1px solid;
+    border-radius: 5px;
+}

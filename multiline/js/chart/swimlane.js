@@ -1,4 +1,6 @@
-function createSwimlane(data) {
+function createSwimlane(data, activeSec) {
+    d3.select(' #tagselector-canvas ').remove();
+
     let datasets    = _.chain(data).flatMap('d');
     let startDate   = datasets.map('s').uniq().minBy((o) => (new Date(o))).value();
     let endDate     = datasets.map('e').uniq().maxBy((o) => (new Date(o))).value();
@@ -6,7 +8,7 @@ function createSwimlane(data) {
 
     let dateFormat  = "%Y-%m-%_d";
     let padding     = { top: 5, right: 15, bottom: 0, left: 15 };
-    let width       = $(' #swimlane-container ').outerWidth(true) - padding.right - padding.left;
+    let width       = $(' #tagselector-container ').outerWidth(true) - padding.right - padding.left;
     let height      = ($(' #wrapper ').outerHeight(true) / 3) - padding.top - padding.bottom;
 
     let axisHeight  = 20;
@@ -14,14 +16,20 @@ function createSwimlane(data) {
     let sectorFont  = 10;
     let sectorWidth = 100;
 
-    $(' #swimlane-container ').width(width);
-    $(' #swimlane-container ').height(height);
-    $(' #swimlane-container ').css('padding', padding.top + 'px ' + padding.right + 'px ' + padding.bottom + 'px ' + padding.left + 'px');
+    $(' #tagselector-container ').width(width);
+    $(' #tagselector-container ').height(height);
+    $(' #tagselector-container ').css('padding', padding.top + 'px ' + padding.right + 'px ' + padding.bottom + 'px ' + padding.left + 'px');
 
     let d3DateParse = d3.timeParse(dateFormat);
     let x           = d3.scaleTime().domain([d3DateParse(startDate), d3DateParse(endDate)]).range([0, width - sectorWidth]);
-    
-    d3.select(' #swimlane-container ').append('svg')
+
+    let swimlane    = d3.select(' #tagselector-container ')
+        .append('div')
+        .attr('id', 'tagselector-canvas')
+        .attr('width', width)
+        .attr('height', height);
+
+    swimlane.append('svg')
         .attr('id', 'ceil-axis-container')
         .attr('style', 'width: ' + (width) + 'px; height: ' + axisHeight + 'px')
         .append('g')
@@ -35,7 +43,7 @@ function createSwimlane(data) {
                 .attr('dy', 12)
                 .attr('class', 'noselect cursor-default');
 
-    let floorLane   = d3.select(' #swimlane-container ').append('div')
+    let floorLane   = swimlane.append('div')
         .attr('id', 'floor-lane-container')
         .attr('style', 'width: ' + width + 'px; height: ' + (height - axisHeight) + 'px; overflow-y : auto;')
         .append('svg')
@@ -49,10 +57,10 @@ function createSwimlane(data) {
 
                 if ($( '#select-' + _.kebabCase(sec) ).hasClass( 'floor-lane-selected' )) {
                     $( '#select-' + _.kebabCase(sec) ).removeClass( 'floor-lane-selected' );
-                    $(' #swimlane-container ').trigger('sector-change', ['remove', sec]);
+                    $(' #tagselector-container ').trigger('sector-change', ['remove', sec]);
                 } else {
                     $( '#select-' + _.kebabCase(sec) ).addClass( 'floor-lane-selected' );
-                    $(' #swimlane-container ').trigger('sector-change', ['add', sec]);
+                    $(' #tagselector-container ').trigger('sector-change', ['add', sec]);
                 }
             });;
 
@@ -68,7 +76,7 @@ function createSwimlane(data) {
             .attr('y', (o) => ((_.indexOf(sectors, o) * laneHeight) + 5))
             .style('font-size', sectorFont + 'px');
 
-    $(' #swimlane-container ').trigger('sector-change', ['add', _.head(sectors)]);
+    // $(' #tagselector-container ').trigger('sector-change', ['add', _.head(sectors)]);
 
     let separatorPath   = d3.path();
     _.forEach(sectors, (sector, idx) => {
@@ -77,7 +85,7 @@ function createSwimlane(data) {
 
         floorLane.append('rect')
             .attr('id', 'select-' + _.kebabCase(sector))
-            .attr('class', (idx == 0 ? 'floor-lane-selected' : ''))
+            .attr('class', (_.includes(activeSec, sector) ? 'floor-lane-selected' : ''))
             .attr('fill', 'transparent')
             .attr('width', width)
             .attr('height', laneHeight)
