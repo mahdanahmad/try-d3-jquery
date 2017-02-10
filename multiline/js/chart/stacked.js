@@ -5,16 +5,19 @@ function createStacked(data, radiovalue, keys, activeKeys) {
     let startDate   = datasets.map('s').uniq().minBy((o) => (new Date(o))).value();
     let endDate     = datasets.map('e').uniq().maxBy((o) => (new Date(o))).value();
 
+    console.log(data);
+    console.log(startDate);
+    console.log(endDate);
 
     let dateFormat  = "%Y-%m-%_d";
     let legendHgt   = 30;
-    let padding     = { top: 15, right: 15, bottom: 15, left: 15 };
+    let padding     = { top: 15, right: 15, bottom: 15, left: 30 };
     let width       = $(' #stacked-chart ').outerWidth(true) - padding.right - padding.left;
     let height      = ($(' #wrapper ').outerHeight(true) * 2 / 3) - $(' #radio-container ').outerHeight() - padding.top - padding.bottom - legendHgt;
 
-    $(' #stacked-chart ').width(width);
-    $(' #stacked-chart ').height(height + legendHgt);
-    $(' #stacked-chart ').css('padding', padding.top + 'px ' + padding.right + 'px ' + padding.bottom + 'px ' + padding.left + 'px');
+    // $(' #stacked-chart ').width(width);
+    // $(' #stacked-chart ').height(height + legendHgt);
+    // $(' #stacked-chart ').css('padding', padding.top + 'px ' + padding.right + 'px ' + padding.bottom + 'px ' + padding.left + 'px');
 
     let d3DateParse = d3.timeParse(dateFormat);
 
@@ -45,12 +48,15 @@ function createStacked(data, radiovalue, keys, activeKeys) {
     // let defaultx    = d3.scaleTime().domain([d3DateParse(startDate), d3DateParse(endDate)]).range([0, width]);
     let y           = d3.scaleLinear().domain([-maxData, maxData]).range([height, 0]);
 
-    let xAxis       = d3.axisTop(x).tickSize(12);
+    let xAxis       = d3.axisTop(x).tickSize(5);
+    let yAxis       = d3.axisLeft(y).tickSize(3).tickFormat((d) => (d3.format('.2')(Math.abs(d))));
 
     var svg = d3.select(' #stacked-chart ').append('svg')
         .attr('id', 'stacked-svg')
-        .attr('width', width)
-        .attr('height', height + legendHgt);
+        .attr('width', width + padding.right + padding.left)
+        .attr('height', height + padding.top + padding.bottom + legendHgt)
+        .append("g")
+            .attr('transform', 'translate(' + padding.left + ',' + padding.top + ')');
 
     let barwidth    = width / moment(endDate).diff(moment(startDate), 'days');
     svg.append("g")
@@ -89,6 +95,17 @@ function createStacked(data, radiovalue, keys, activeKeys) {
         .attr('transform', 'translate(0,' + y(0) + ')')
         .attr('width', width)
         .call(xAxis)
+        .selectAll('text')
+            // .attr('dx', 23)
+            // .attr('dy', 12)
+            .attr('class', 'noselect cursor-default');
+
+    // leftAxis
+    svg.append('g')
+        .attr('class', 'left-line')
+        .attr('transform', 'translate(0,0)')
+        .attr('height', height)
+        .call(yAxis)
         .selectAll('text')
             // .attr('dx', 23)
             // .attr('dy', 12)
