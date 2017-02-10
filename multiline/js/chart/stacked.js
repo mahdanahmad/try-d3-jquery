@@ -2,12 +2,8 @@ function createStacked(data, radiovalue, keys, activeKeys) {
     d3.select(' #stacked-svg ').remove();
 
     let datasets    = _.chain(data).flatMap('d');
-    let startDate   = datasets.map('s').uniq().minBy((o) => (new Date(o))).value();
+    let startDate   = moment(datasets.map('s').uniq().minBy((o) => (new Date(o))).value()).subtract(1, 'd').format('YYYY-MM-DD');
     let endDate     = datasets.map('e').uniq().maxBy((o) => (new Date(o))).value();
-
-    console.log(data);
-    console.log(startDate);
-    console.log(endDate);
 
     let dateFormat  = "%Y-%m-%_d";
     let legendHgt   = 30;
@@ -26,11 +22,11 @@ function createStacked(data, radiovalue, keys, activeKeys) {
     let timeline    = [];
     let maxData     = 0;
     async.map(datasets.value(), (o, callback) => {
-        async.times(moment(o.e).diff(o.s, 'days'), (d, next) => {
+        async.times(moment(o.e).diff(o.s, 'days') + 1, (d, next) => {
             let currentDate = moment(o.s).add(d, 'd').format('YYYY-MM-DD');
             switch (radiovalue) {
                 case 'rows': next(null, {date : currentDate, freq : o.f, val : o.r}); break;
-                case 'filesize': next(null, {date : currentDate, freq : o.f, val : o.z}); break;
+                case 'filesize': next(null, {date : currentDate, freq : o.f, val : (o.z / 1000)}); break;
                 default: next(null, {date : currentDate, freq : o.f, val : 1});
             }
         }, function(err, results) {
@@ -49,7 +45,7 @@ function createStacked(data, radiovalue, keys, activeKeys) {
     let y           = d3.scaleLinear().domain([-maxData, maxData]).range([height, 0]);
 
     let xAxis       = d3.axisTop(x).tickSize(5);
-    let yAxis       = d3.axisLeft(y).tickSize(3).tickFormat((d) => (d3.format('.2')(Math.abs(d))));
+    let yAxis       = d3.axisLeft(y).tickSize(3).tickFormat((d) => (d3.format('')(Math.abs(d))));
 
     var svg = d3.select(' #stacked-chart ').append('svg')
         .attr('id', 'stacked-svg')

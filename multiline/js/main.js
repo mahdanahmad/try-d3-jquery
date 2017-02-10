@@ -1,7 +1,7 @@
 let radio       = [
     { title : 'Dataset', value : 'dataset' },
     { title : 'Rows', value : 'rows' },
-    { title : 'Filesize (in KB)', value : 'filesize' },
+    { title : 'Filesize (in MB)', value : 'filesize' },
 ];
 
 let frequencies = [];

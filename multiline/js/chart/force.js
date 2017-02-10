@@ -54,17 +54,7 @@ function createForce(data, activeSec) {
         .attr("class", (d) => (_.includes(activeSec, d.name) ? 'nodes-selected' : ''))
         .attr("r", (d) => (sizeScale(d.count) - .75))
         .attr("style", "cursor:pointer")
-        .attr("fill", '#98df8a')
-        .on("click", (o) => {
-            if ($( '#circle-' + _.kebabCase(o.name) ).hasClass( 'nodes-selected' )) {
-                $( '#circle-' + _.kebabCase(o.name) ).removeClass( 'nodes-selected' );
-                $(' #tagselector-container ').trigger('sector-change', ['remove', o.name]);
-            } else {
-                $( '#circle-' + _.kebabCase(o.name) ).addClass( 'nodes-selected' );
-                $(' #tagselector-container ').trigger('sector-change', ['add', o.name]);
-            }
-        });
-
+        .attr("fill", '#98df8a');
     node.append("text")
         .attr("font-size", "10px")
         .attr("text-anchor", "middle")
@@ -79,6 +69,17 @@ function createForce(data, activeSec) {
         .on("start", dragstarted)
         .on("drag", dragged)
         .on("end", dragended));
+
+    node.on("click", (o) => {
+        if ($( '#circle-' + _.kebabCase(o.name) ).hasClass( 'nodes-selected' )) {
+            $( '#circle-' + _.kebabCase(o.name) ).removeClass( 'nodes-selected' );
+            $(' #tagselector-container ').trigger('sector-change', ['remove', o.name]);
+        } else {
+            $( '#circle-' + _.kebabCase(o.name) ).addClass( 'nodes-selected' );
+            $(' #tagselector-container ').trigger('sector-change', ['add', o.name]);
+        }
+    });
+
 
     simulation
         .nodes(nodeData)
