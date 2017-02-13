@@ -9,7 +9,7 @@ function createStacked(data, radiovalue, keys, activeKeys) {
     let legendHgt   = 30;
     let padding     = { top: 15, right: 15, bottom: 15, left: 30 };
     let width       = $(' #stacked-chart ').outerWidth(true) - padding.right - padding.left;
-    let height      = ($(' #wrapper ').outerHeight(true) * 2 / 3) - $(' #radio-container ').outerHeight() - padding.top - padding.bottom - legendHgt;
+    let height      = ($(' #wrapper ').outerHeight(true) / 2) - $(' #radio-container ').outerHeight() - padding.top - padding.bottom - legendHgt;
 
     // $(' #stacked-chart ').width(width);
     // $(' #stacked-chart ').height(height + legendHgt);

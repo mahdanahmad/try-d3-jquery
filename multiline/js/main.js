@@ -12,8 +12,6 @@ let rawdata     = [];
 
 let exclude     = ['China']
 
-let baseURL     = "http://localhost:5000/";
-
 $(' #tagselector-container ').on('sector-change', (event, state, sector) => {
     let radiovalue  = $(' input[name=radio-graph]:checked ', ' #radio-container ').val();
 
@@ -42,24 +40,24 @@ $(' #radio-container ').change(() => {
     createStacked(_.filter(raw_data, (o) => (_.intersection(activeSec, o.t).length > 0)), radiovalue, frequencies, activeFreq);
 });
 
-$(' #tagselector-changer ').click(() => {
-    if (selState == 'swimlane') {
-        selState = 'graph';
-        $(' #tagselector-changer ').html('Change to swimlane');
-        createForce(raw_data, activeSec);
-    } else if (selState == 'graph') {
-        selState = 'swimlane';
-        $(' #tagselector-changer ').html('Change to graph');
-        createSwimlane(raw_data, activeSec);
-    }
-});
+// $(' #tagselector-changer ').click(() => {
+//     if (selState == 'swimlane') {
+//         selState = 'graph';
+//         $(' #tagselector-changer ').html('Change to swimlane');
+//         createForce(raw_data, activeSec);
+//     } else if (selState == 'graph') {
+//         selState = 'swimlane';
+//         $(' #tagselector-changer ').html('Change to graph');
+//         createSwimlane(raw_data, activeSec);
+//     }
+// });
 
 window.onload   = function() {
     let stringRadio = _.chain(radio).map((o) => ('<input type="radio" id="radio-' + o['value'] + '" name="radio-graph" value="' + o['value'] + '"> ' + o['title'])).value().join(" ");
     $(' #radio-container ').append(stringRadio);
     $(' #radio-' + _.head(radio)['value'] ).prop('checked',true);
-    $(' #tagselector-changer ').html("Change to graph");
-    $(' #tagselector-changer ').css('top', -($(' #wrapper ').outerHeight(true) / 3 + 38));
+    // $(' #tagselector-changer ').html("Change to graph");
+    // $(' #tagselector-changer ').css('top', -($(' #wrapper ').outerHeight(true) / 2 + 38));
 
     $.getJSON('data/result.json', (result) => {
         raw_data    = _.filter(result, (o) => (_.size(o.d) > 0));
@@ -69,6 +67,7 @@ window.onload   = function() {
         let headSec = _.chain(result).filter((o) => (_.size(o.d) > 0)).flatMap('t').uniq().sortBy().head().value()
         activeSec.push(headSec);
 
+        createForce(result, activeSec);
         createSwimlane(result, activeSec);
 
         let radiovalue  = $(' input[name=radio-graph]:checked ', ' #radio-container ').val();

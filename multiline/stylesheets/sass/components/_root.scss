@@ -12,3 +12,11 @@
     border: 1px solid;
     border-radius: 5px;
 }
+#graph-container {
+    display: inline-block; float: left;
+    // width: 30%;
+}
+#swimlane-container {
+    display: inline-block; float: right;
+    // width: 70%;
+}

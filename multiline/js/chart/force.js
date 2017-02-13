@@ -1,5 +1,5 @@
 function createForce(data, activeSec) {
-    d3.select(' #tagselector-canvas ').remove();
+    d3.select(' #graph-canvas ').remove();
 
     let datasets    = _.chain(data).filter((o) => (_.size(o.d) > 0)).map('t');
     let nodeData    = datasets.flatMap().groupBy().map((val, key) => ({name : key, count : _.size(val)})).value();
@@ -12,19 +12,19 @@ function createForce(data, activeSec) {
     let radiusrange = [15, 35];
     let linkrange   = [35, 15];
     let padding     = { top: 5, right: 15, bottom: 0, left: 15 };
-    let width       = $(' #tagselector-container ').outerWidth(true) - padding.right - padding.left;
-    let height      = ($(' #wrapper ').outerHeight(true) / 3) - padding.top - padding.bottom;
+    let width       = ($(' #tagselector-container ').outerWidth(true) * 1 / 3) - padding.right - padding.left;
+    let height      = ($(' #wrapper ').outerHeight(true) / 2) - padding.top - padding.bottom;
 
-    $(' #tagselector-container ').width(width);
-    $(' #tagselector-container ').height(height);
-    $(' #tagselector-container ').css('padding', padding.top + 'px ' + padding.right + 'px ' + padding.bottom + 'px ' + padding.left + 'px');
+    $(' #graph-container ').width(width);
+    $(' #graph-container ').height(height);
+    $(' #graph-container ').css('padding', padding.top + 'px ' + padding.right + 'px ' + padding.bottom + 'px ' + padding.left + 'px');
 
     let sizeScale   = d3.scaleLinear().domain([_.minBy(nodeData, 'count').count, _.maxBy(nodeData, 'count').count]).range(radiusrange);
     let lengthScale = d3.scaleLinear().domain([_.minBy(linkData, 'count').count, _.maxBy(linkData, 'count').count]).range(linkrange);
 
-    let forceSVG    = d3.select(' #tagselector-container ')
+    let forceSVG    = d3.select(' #graph-container ')
         .append('svg')
-        .attr('id', 'tagselector-canvas')
+        .attr('id', 'graph-canvas')
         .attr('width', width)
         .attr('height', height);
 
@@ -125,4 +125,12 @@ function createForce(data, activeSec) {
             }
         });
     }
+
+    $(' #tagselector-container ').on('sector-change', (event, state, sector) => {
+        if (state == 'add') {
+            $( '#circle-' + _.kebabCase(sector) ).addClass( 'nodes-selected' );
+        } else if (state == 'remove') {
+            $( '#circle-' + _.kebabCase(sector) ).removeClass( 'nodes-selected' );
+        }
+    });
 }

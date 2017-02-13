@@ -1,5 +1,5 @@
 function createSwimlane(data, activeSec) {
-    d3.select(' #tagselector-canvas ').remove();
+    d3.select(' #swimlane-canvas ').remove();
 
     let datasets    = _.chain(data).flatMap('d');
     let startDate   = datasets.map('s').uniq().minBy((o) => (new Date(o))).value();
@@ -8,24 +8,24 @@ function createSwimlane(data, activeSec) {
 
     let dateFormat  = "%Y-%m-%_d";
     let padding     = { top: 5, right: 15, bottom: 0, left: 15 };
-    let width       = $(' #tagselector-container ').outerWidth(true) - padding.right - padding.left;
-    let height      = ($(' #wrapper ').outerHeight(true) / 3) - padding.top - padding.bottom;
+    let width       = ($(' #tagselector-container ').outerWidth(true) * 2 / 3) - padding.right - padding.left;
+    let height      = ($(' #wrapper ').outerHeight(true) / 2) - padding.top - padding.bottom;
 
     let axisHeight  = 20;
     let laneHeight  = 25;
     let sectorFont  = 10;
     let sectorWidth = 100;
 
-    $(' #tagselector-container ').width(width);
-    $(' #tagselector-container ').height(height);
-    $(' #tagselector-container ').css('padding', padding.top + 'px ' + padding.right + 'px ' + padding.bottom + 'px ' + padding.left + 'px');
+    $(' #swimlane-container ').width(width);
+    $(' #swimlane-container ').height(height);
+    $(' #swimlane-container ').css('padding', padding.top + 'px ' + padding.right + 'px ' + padding.bottom + 'px ' + padding.left + 'px');
 
     let d3DateParse = d3.timeParse(dateFormat);
     let x           = d3.scaleTime().domain([d3DateParse(startDate), d3DateParse(endDate)]).range([0, width - sectorWidth]);
 
-    let swimlane    = d3.select(' #tagselector-container ')
+    let swimlane    = d3.select(' #swimlane-container ')
         .append('div')
-        .attr('id', 'tagselector-canvas')
+        .attr('id', 'swimlane-canvas')
         .attr('width', width)
         .attr('height', height);
 
@@ -106,4 +106,12 @@ function createSwimlane(data, activeSec) {
     }).value();
     swimlanePath.closePath();
     floorLane.append('path').attr('d', swimlanePath.toString()).attr('id', 'swimlane-lane');
+
+    $(' #tagselector-container ').on('sector-change', (event, state, sector) => {
+        if (state == 'add') {
+            $( '#select-' + _.kebabCase(sector) ).addClass( 'floor-lane-selected' );
+        } else if (state == 'remove') {
+            $( '#select-' + _.kebabCase(sector) ).removeClass( 'floor-lane-selected' );
+        }
+    });
 }
