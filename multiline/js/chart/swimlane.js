@@ -1,10 +1,8 @@
-function createSwimlane(data, activeSec) {
+function createSwimlane(data, activeSec, startDate, endDate) {
     d3.select(' #swimlane-canvas ').remove();
-
-    let datasets    = _.chain(data).flatMap('d');
-    let startDate   = datasets.map('s').uniq().minBy((o) => (new Date(o))).value();
-    let endDate     = datasets.map('e').uniq().maxBy((o) => (new Date(o))).value();
     let sectors     = _.chain(data).filter((o) => (_.size(o.d) > 0)).flatMap('t').uniq().sortBy().value();
+
+    console.log(_.chain(data).flatMap('t').uniq().sortBy().value());
 
     let dateFormat  = "%Y-%m-%_d";
     let padding     = { top: 5, right: 15, bottom: 0, left: 15 };
@@ -95,12 +93,15 @@ function createSwimlane(data, activeSec) {
     floorLane.append('path').attr('d', separatorPath.toString()).attr('id', 'separator-line');
 
     let swimlanePath    = d3.path();
-    _.chain(data).filter((o) => (_.size(o.d) > 0)).groupBy('t').mapValues((o) => (_.flatMap(o, 'd'))).forEach((val, key) => {
+    _.chain(data).filter((o) => (_.size(o.d) > 0)).groupBy('t').mapValues((o) => (_.chain(o).flatMap('d').value())).forEach((val, key) => {
         let keys    = key.split(',');
         _.forEach(val, (o) => {
             _.forEach(keys, (k) => {
-                swimlanePath.moveTo(sectorWidth + x(d3DateParse(o.s)), _.indexOf(sectors, k) * laneHeight + (laneHeight * 0.5));
-                swimlanePath.lineTo(sectorWidth + x(d3DateParse(o.e)), _.indexOf(sectors, k) * laneHeight + (laneHeight * 0.5));
+                // swimlanePath.moveTo(sectorWidth + x(d3DateParse(o.s)), _.indexOf(sectors, k) * laneHeight + (laneHeight * 0.5));
+                // swimlanePath.lineTo(sectorWidth + x(d3DateParse(o.e)), _.indexOf(sectors, k) * laneHeight + (laneHeight * 0.5));
+
+                swimlanePath.moveTo(sectorWidth + x(d3DateParse(moment(o.s).isAfter(startDate) ? o.s : startDate)), _.indexOf(sectors, k) * laneHeight + (laneHeight * 0.5));
+                swimlanePath.lineTo(sectorWidth + x(d3DateParse(moment(moment(o.e).isBefore(endDate) ? o.e : endDate).add(1, 'd').format('YYYY-MM-DD'))), _.indexOf(sectors, k) * laneHeight + (laneHeight * 0.5));
             });
         });
     }).value();

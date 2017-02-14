@@ -14,9 +14,11 @@
 }
 #graph-container {
     display: inline-block; float: left;
-    // width: 30%;
 }
 #swimlane-container {
     display: inline-block; float: right;
-    // width: 70%;
+}
+#date-container {
+    display: inline-block; position: absolute; top: 0px; left: 0px; padding: 10px 5px 10px 30px;
+    input { border-radius: 5px; padding: 5px; -webkit-appearance: none; -moz-appearance: none; text-align: center; }
 }
