@@ -88,7 +88,6 @@ function createForce(data, activeSec, radiovalue) {
         }
     });
 
-
     simulation
         .nodes(nodeData)
         .on("tick", ticked);

@@ -1,16 +1,17 @@
 function createSwimlane(data, activeSec, startDate, endDate) {
     d3.select(' #swimlane-canvas ').remove();
-    let sectors     = _.chain(data).flatMap('t').uniq().sortBy().value();
+    let sectorsLeft = _.chain(data).flatMap('t').uniq().difference(activeSec).sortBy().value();
+    let sectors     = _.chain(activeSec).sortBy().concat(sectorsLeft).value();
 
     let dateFormat  = "%Y-%m-%_d";
-    let padding     = { top: 5, right: 15, bottom: 0, left: 15 };
+    let padding     = { top: 5, right: 15, bottom: 10, left: 15 };
     let width       = ($(' #tagselector-container ').outerWidth(true) * 2 / 3) - padding.right - padding.left;
     let height      = ($(' #wrapper ').outerHeight(true) / 2) - padding.top - padding.bottom;
 
     let axisHeight  = 20;
     let laneHeight  = 25;
     let sectorFont  = 10;
-    let sectorWidth = 100;
+    let sectorWidth = 125;
 
     $(' #swimlane-container ').width(width);
     $(' #swimlane-container ').height(height);
@@ -46,65 +47,77 @@ function createSwimlane(data, activeSec, startDate, endDate) {
             .attr('width', width)
             .attr('height', (_.size(sectors) * laneHeight))
             .attr('id', 'floor-lane-svg')
-            .on('mousedown', () => {
-                let point   = d3.mouse(d3.select(' #floor-lane-svg ').node());
-                let idx     = _.floor(point[1] / laneHeight);
-                let sec     = _.nth(sectors, idx);
+            // .on('click', () => {
+            //     let point   = d3.mouse(d3.select(' #floor-lane-svg ').node());
+            //     let idx     = _.floor(point[1] / laneHeight);
+            //     let sec     = _.nth(sectors, idx);
+            //
+            //     if ($( '#select-' + _.kebabCase(sec) ).hasClass( 'floor-lane-selected' )) {
+            //         $( '#select-' + _.kebabCase(sec) ).removeClass( 'floor-lane-selected' );
+            //         $(' #tagselector-container ').trigger('sector-change', ['remove', sec]);
+            //     } else {
+            //         $( '#select-' + _.kebabCase(sec) ).addClass( 'floor-lane-selected' );
+            //         $(' #tagselector-container ').trigger('sector-change', ['add', sec]);
+            //     }
+            // });
 
-                if ($( '#select-' + _.kebabCase(sec) ).hasClass( 'floor-lane-selected' )) {
-                    $( '#select-' + _.kebabCase(sec) ).removeClass( 'floor-lane-selected' );
-                    $(' #tagselector-container ').trigger('sector-change', ['remove', sec]);
-                } else {
-                    $( '#select-' + _.kebabCase(sec) ).addClass( 'floor-lane-selected' );
-                    $(' #tagselector-container ').trigger('sector-change', ['add', sec]);
-                }
-            });;
+    let swimlanePaths   = {};
+    _.chain(data).groupBy('t').mapValues((o) => (_.chain(o).flatMap('d').value())).forEach((val, key) => {
+        let keys    = key.split(',');
+        _.forEach(val, (o) => {
+            _.forEach(keys, (k) => {
+                if (_.isNil(swimlanePaths[k])) { swimlanePaths[k] = d3.path(); }
 
-    floorLane.append('g')
-        .attr('class', 'noselect cursor-default')
-        .attr('transform', 'translate(10, 10)')
-        .selectAll('.lane-sector')
-        .data(sectors)
-        .enter().append('text')
-            .text((o) => (o))
-            .attr('class', 'lane-sector')
-            .attr('x', 0)
-            .attr('y', (o) => ((_.indexOf(sectors, o) * laneHeight) + 5))
-            .style('font-size', sectorFont + 'px');
-
-    // $(' #tagselector-container ').trigger('sector-change', ['add', _.head(sectors)]);
+                swimlanePaths[k].moveTo(sectorWidth + x(d3DateParse(moment(o.s).isAfter(startDate) ? o.s : startDate)), (laneHeight * 0.5));
+                swimlanePaths[k].lineTo(sectorWidth + x(d3DateParse(moment(moment(o.e).isBefore(endDate) ? o.e : endDate).add(1, 'd').format('YYYY-MM-DD'))), (laneHeight * 0.5));
+            });
+        });
+    }).value();
 
     let separatorPath   = d3.path();
     _.forEach(sectors, (sector, idx) => {
         separatorPath.moveTo(sectorWidth, ((idx + 1) * laneHeight));
         separatorPath.lineTo(width, ((idx + 1) * laneHeight));
-
-        floorLane.append('rect')
-            .attr('id', 'select-' + _.kebabCase(sector))
-            .attr('class', (_.includes(activeSec, sector) ? 'floor-lane-selected' : ''))
-            .attr('fill', 'transparent')
-            .attr('width', width)
-            .attr('height', laneHeight)
-            .attr('transform', 'translate(0,' + (idx * laneHeight) + ')');
     });
     separatorPath.closePath();
     floorLane.append('path').attr('d', separatorPath.toString()).attr('id', 'separator-line');
 
-    let swimlanePath    = d3.path();
-    _.chain(data).groupBy('t').mapValues((o) => (_.chain(o).flatMap('d').value())).forEach((val, key) => {
-        let keys    = key.split(',');
-        _.forEach(val, (o) => {
-            _.forEach(keys, (k) => {
-                // swimlanePath.moveTo(sectorWidth + x(d3DateParse(o.s)), _.indexOf(sectors, k) * laneHeight + (laneHeight * 0.5));
-                // swimlanePath.lineTo(sectorWidth + x(d3DateParse(o.e)), _.indexOf(sectors, k) * laneHeight + (laneHeight * 0.5));
+    let groups  = floorLane.selectAll(' g.sector-groups ')
+        .data(sectors)
+        .enter().append('g')
+            .attr('class', 'sector-groups')
+            .attr('id', (d) => ('group-' + _.kebabCase(d)))
+            .attr('transform', (d, i) => ('translate(0,' + (i * laneHeight) + ')'));
 
-                swimlanePath.moveTo(sectorWidth + x(d3DateParse(moment(o.s).isAfter(startDate) ? o.s : startDate)), _.indexOf(sectors, k) * laneHeight + (laneHeight * 0.5));
-                swimlanePath.lineTo(sectorWidth + x(d3DateParse(moment(moment(o.e).isBefore(endDate) ? o.e : endDate).add(1, 'd').format('YYYY-MM-DD'))), _.indexOf(sectors, k) * laneHeight + (laneHeight * 0.5));
-            });
-        });
-    }).value();
-    swimlanePath.closePath();
-    floorLane.append('path').attr('d', swimlanePath.toString()).attr('id', 'swimlane-lane');
+    groups.append('text')
+        .text((d) => (d))
+        .attr('class', 'lane-sector noselect cursor-default')
+        .attr('x', 5)
+        .attr('y', 15)
+        .style('font-size', sectorFont + 'px');
+
+    groups.append('rect')
+        .attr('id', (d) => ('select-' + _.kebabCase(d)))
+        .attr('class', (d) => (_.includes(activeSec, d) ? 'floor-lane-selected' : ''))
+        .attr('fill', 'transparent')
+        .attr('width', width)
+        .attr('height', laneHeight);
+
+    groups.append('path').attr('d', (d) => (swimlanePaths[d].toString())).attr('class', 'swimlane-lane');
+
+    groups.on('click', (o) => {
+        if ($( '#select-' + _.kebabCase(o) ).hasClass( 'floor-lane-selected' )) {
+            $( '#select-' + _.kebabCase(o) ).removeClass( 'floor-lane-selected' );
+            $(' #tagselector-container ').trigger('sector-change', ['remove', o]);
+
+            redrawOrder();
+        } else {
+            $( '#select-' + _.kebabCase(o) ).addClass( 'floor-lane-selected' );
+            $(' #tagselector-container ').trigger('sector-change', ['add', o]);
+
+            redrawOrder();
+        }
+    });
 
     $(' #tagselector-container ').on('sector-change', (event, state, sector) => {
         if (state == 'add') {
@@ -112,5 +125,14 @@ function createSwimlane(data, activeSec, startDate, endDate) {
         } else if (state == 'remove') {
             $( '#select-' + _.kebabCase(sector) ).removeClass( 'floor-lane-selected' );
         }
+
+        redrawOrder();
     });
+
+    function redrawOrder(state, sector) {
+        _.chain(activeSec).sortBy().concat(_.chain(sectors).difference(activeSec).sortBy().value()).forEach((o, i) => {
+            d3.select('#group-' + _.kebabCase(o) ).attr('transform', ('translate(0,' + (i * laneHeight) + ')'));
+        }).value()
+    }
+
 }
