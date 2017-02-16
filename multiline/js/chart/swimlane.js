@@ -1,8 +1,6 @@
 function createSwimlane(data, activeSec, startDate, endDate) {
     d3.select(' #swimlane-canvas ').remove();
-    let sectors     = _.chain(data).filter((o) => (_.size(o.d) > 0)).flatMap('t').uniq().sortBy().value();
-
-    console.log(_.chain(data).flatMap('t').uniq().sortBy().value());
+    let sectors     = _.chain(data).flatMap('t').uniq().sortBy().value();
 
     let dateFormat  = "%Y-%m-%_d";
     let padding     = { top: 5, right: 15, bottom: 0, left: 15 };
@@ -93,7 +91,7 @@ function createSwimlane(data, activeSec, startDate, endDate) {
     floorLane.append('path').attr('d', separatorPath.toString()).attr('id', 'separator-line');
 
     let swimlanePath    = d3.path();
-    _.chain(data).filter((o) => (_.size(o.d) > 0)).groupBy('t').mapValues((o) => (_.chain(o).flatMap('d').value())).forEach((val, key) => {
+    _.chain(data).groupBy('t').mapValues((o) => (_.chain(o).flatMap('d').value())).forEach((val, key) => {
         let keys    = key.split(',');
         _.forEach(val, (o) => {
             _.forEach(keys, (k) => {

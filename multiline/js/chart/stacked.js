@@ -1,9 +1,11 @@
-function createStacked(data, radiovalue, keys, activeKeys) {
+function createStacked(data, radiovalue, keys, activeKeys, fromDate, untilDate) {
     d3.select(' #stacked-svg ').remove();
 
-    let datasets    = _.chain(data).flatMap('d');
-    let startDate   = moment(datasets.map('s').uniq().minBy((o) => (new Date(o))).value()).subtract(1, 'd').format('YYYY-MM-DD');
-    let endDate     = datasets.map('e').uniq().maxBy((o) => (new Date(o))).value();
+    let datasets        = _.chain(data).flatMap('d');
+    let startFromSet    = moment(datasets.map('s').uniq().minBy((o) => (new Date(o))).value());
+    let endFromSet      = moment(datasets.map('e').uniq().maxBy((o) => (new Date(o))).value());
+    let startDate       = startFromSet.isSameOrBefore(fromDate) ? fromDate : startFromSet.format('YYYY-MM-DD');
+    let endDate         = endFromSet.isSameOrAfter(untilDate) ? untilDate : endFromSet.format('YYYY-MM-DD');
 
     let dateFormat  = "%Y-%m-%_d";
     let legendHgt   = 30;
@@ -23,17 +25,21 @@ function createStacked(data, radiovalue, keys, activeKeys) {
     let maxData     = 0;
     async.map(datasets.value(), (o, callback) => {
         async.times(moment(o.e).diff(o.s, 'days') + 1, (d, next) => {
-            let currentDate = moment(o.s).add(d, 'd').format('YYYY-MM-DD');
-            switch (radiovalue) {
-                case 'rows': next(null, {date : currentDate, freq : o.f, val : o.r}); break;
-                case 'filesize': next(null, {date : currentDate, freq : o.f, val : (o.z / 1000)}); break;
-                default: next(null, {date : currentDate, freq : o.f, val : 1});
+            let currentDate = moment(o.s).add(d, 'd');
+            if (currentDate.isSameOrAfter(startDate) && currentDate.isSameOrBefore(untilDate))  {
+                switch (radiovalue) {
+                    case 'rows': next(null, {date : currentDate.format('YYYY-MM-DD'), freq : o.f, val : o.r}); break;
+                    case 'filesize': next(null, {date : currentDate.format('YYYY-MM-DD'), freq : o.f, val : (o.z / 1000)}); break;
+                    default: next(null, {date : currentDate.format('YYYY-MM-DD'), freq : o.f, val : 1});
+                }
+            } else {
+                next(null, null);
             }
         }, function(err, results) {
             callback(null, results);
         });
     }, (err, results) => {
-        let chained = _.chain(results).flatten().groupBy('date');
+        let chained = _.chain(results).flatten().compact().groupBy('date');
         timeline    = chained.map((val, key) => ({date : key, data : _.chain(val).groupBy('freq').map((fval, fkey) => ({freq : parseInt(fkey), val : _.sumBy(fval, 'val')})).value()})).value();
         maxData     = chained.map((o) => (_.sumBy(o, 'val'))).max().value();
         if (maxData == 0) { maxData++; }

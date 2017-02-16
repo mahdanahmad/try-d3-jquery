@@ -13,15 +13,16 @@ let rangeData   = [];
 let exclude     = ['China']
 
 $(' #tagselector-container ').on('sector-change', (event, state, sector) => {
-    let radiovalue  = $(' input[name=radio-graph]:checked ', ' #radio-container ').val();
-
     if (state == 'add') {
         activeSec.push(sector);
     } else if (state == 'remove') {
         _.pull(activeSec, sector);
     }
 
-    createStacked(_.filter(rangeData, (o) => (_.intersection(activeSec, o.t).length > 0)), radiovalue, frequencies, activeFreq);
+    let startDate   = $.datepicker.formatDate('yy-mm-dd', $(' #startpicker ').datepicker('getDate'));
+    let endDate     = $.datepicker.formatDate('yy-mm-dd', $(' #endpicker ').datepicker('getDate'));
+    let radiovalue  = $(' input[name=radio-graph]:checked ', ' #radio-container ').val();
+    createStacked(_.filter(rangeData, (o) => (_.intersection(activeSec, o.t).length > 0)), radiovalue, frequencies, activeFreq, startDate, endDate);
 });
 
 $(' #chart-container ').on('keys-change', (event, state, key) => {
@@ -31,13 +32,19 @@ $(' #chart-container ').on('keys-change', (event, state, key) => {
         _.pull(activeFreq, key);
     }
 
+    let startDate   = $.datepicker.formatDate('yy-mm-dd', $(' #startpicker ').datepicker('getDate'));
+    let endDate     = $.datepicker.formatDate('yy-mm-dd', $(' #endpicker ').datepicker('getDate'));
     let radiovalue  = $(' input[name=radio-graph]:checked ', ' #radio-container ').val();
-    createStacked(_.filter(rangeData, (o) => (_.intersection(activeSec, o.t).length > 0)), radiovalue, frequencies, activeFreq);
+    createForce(rangeData, activeSec, radiovalue);
+    createStacked(_.filter(rangeData, (o) => (_.intersection(activeSec, o.t).length > 0)), radiovalue, frequencies, activeFreq, startDate, endDate);
 });
 
 $(' #radio-container ').change(() => {
+    let startDate   = $.datepicker.formatDate('yy-mm-dd', $(' #startpicker ').datepicker('getDate'));
+    let endDate     = $.datepicker.formatDate('yy-mm-dd', $(' #endpicker ').datepicker('getDate'));
     let radiovalue  = $(' input[name=radio-graph]:checked ', ' #radio-container ').val();
-    createStacked(_.filter(rangeData, (o) => (_.intersection(activeSec, o.t).length > 0)), radiovalue, frequencies, activeFreq);
+    createForce(rangeData, activeSec, radiovalue);
+    createStacked(_.filter(rangeData, (o) => (_.intersection(activeSec, o.t).length > 0)), radiovalue, frequencies, activeFreq, startDate, endDate);
 });
 
 window.onload   = function() {
@@ -74,6 +81,7 @@ window.onload   = function() {
 
         let startDate   = $.datepicker.formatDate('yy-mm-dd', fromPicker.datepicker('getDate'));
         let endDate     = $.datepicker.formatDate('yy-mm-dd', untilPicker.datepicker('getDate'));
+        let radiovalue  = $(' input[name=radio-graph]:checked ', ' #radio-container ').val();
 
         let datasets    = _.chain(result);
         rawData         = datasets.filter((o) => (_.size(o.d) > 0)).value();
@@ -81,18 +89,15 @@ window.onload   = function() {
         rangeData       = rangesets.value();
         activeSec.push(rangesets.flatMap('t').uniq().sortBy().head().value());
 
-        console.log(rawData);
-
-        createForce(rangesets.value(), activeSec, startDate, endDate);
+        createForce(rangesets.value(), activeSec, radiovalue);
         createSwimlane(rangesets.value(), activeSec, startDate, endDate);
-
-        let radiovalue  = $(' input[name=radio-graph]:checked ', ' #radio-container ').val();
-        createStacked(_.filter(rangesets.value(), (o) => (_.intersection(activeSec, o.t).length > 0)), radiovalue, frequencies, activeFreq);
+        createStacked(_.filter(rangesets.value(), (o) => (_.intersection(activeSec, o.t).length > 0)), radiovalue, frequencies, activeFreq, startDate, endDate);
     });
 
     function redrawOnDatepickerChange() {
         let startDate   = $.datepicker.formatDate('yy-mm-dd', $(' #startpicker ').datepicker('getDate'));
         let endDate     = $.datepicker.formatDate('yy-mm-dd', $(' #endpicker ').datepicker('getDate'));
+        let radiovalue  = $(' input[name=radio-graph]:checked ', ' #radio-container ').val();
 
         let rangesets   = _.chain(rawData).map((o) => ({ d : _.chain(o.d).filter((r) => (moment(r.e).isAfter(startDate) && moment(r.s).isBefore(endDate))).value(), g : o.g, n : o.n, t : o.t })).filter((o) => (_.size(o.d) > 0))
         rangeData       = rangesets.value();
@@ -102,12 +107,10 @@ window.onload   = function() {
             activeSec   = sameSec;
         } else {
             activeSec   = [rangesets.flatMap('t').uniq().sortBy().head().value()];
-
-            let radiovalue  = $(' input[name=radio-graph]:checked ', ' #radio-container ').val();
-            createStacked(_.filter(rangesets.value(), (o) => (_.intersection(activeSec, o.t).length > 0)), radiovalue, frequencies, activeFreq);
         }
 
-        createForce(rangesets.value(), activeSec, startDate, endDate);
+        createForce(rangesets.value(), activeSec, radiovalue);
         createSwimlane(rangesets.value(), activeSec, startDate, endDate);
+        createStacked(_.filter(rangesets.value(), (o) => (_.intersection(activeSec, o.t).length > 0)), radiovalue, frequencies, activeFreq, startDate, endDate);
     }
 };

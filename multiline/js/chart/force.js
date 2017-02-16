@@ -1,9 +1,17 @@
-function createForce(data, activeSec) {
+function createForce(data, activeSec, radiovalue) {
     d3.select(' #graph-canvas ').remove();
 
-    let datasets    = _.chain(data).filter((o) => (_.size(o.d) > 0)).map('t');
-    let nodeData    = datasets.flatMap().groupBy().map((val, key) => ({name : key, count : _.size(val)})).value();
-    let linkData    = datasets.uniqWith(_.isEqual).flatMap((tags) => (_.reduce(tags, (result, value) => {
+    let datasets    = _.chain(data);
+    let nodeData    = datasets.flatMap((o) => (_.map(o.t, (tag) => {
+        let count   = 0;
+        switch (radiovalue) {
+            case 'rows': count = _.sumBy(o.d, 'r'); break;
+            case 'filesize': count = _.sumBy(o.d, 'z'); break;
+            default: count = _.size(o.d);
+        }
+        return { tag : tag, count : count };
+    }, []))).groupBy('tag').map((val, key) => ({name : key, count : _.sumBy(val, 'count')})).value();
+    let linkData    = datasets.map('t').uniqWith(_.isEqual).flatMap((tags) => (_.reduce(tags, (result, value) => {
         let data    = [];
         if (_.size(result.tags) > 0) { _.forEach(result.tags, (o) => { data.push([o, value]); }); }
         return { data : _.concat((result['data'] || (result['data'] = [])), data), tags : _.concat(result['tags'] || (result['tags'] = []), value) };
