@@ -1,7 +1,6 @@
-function createForce(data, activeSec, radiovalue) {
+function createForce(data, activeSec, activeFreq, radiovalue) {
     d3.select(' #graph-canvas ').remove();
-
-    let datasets    = _.chain(data);
+    let datasets    = _.chain(data).map((o) => (_.assign({}, o, { d : _.filter(o.d, (d) => (_.includes(activeFreq, d.f))) }))).filter((o) => (o.d.length > 0));
     let nodeData    = datasets.flatMap((o) => (_.map(o.t, (tag) => {
         let count   = 0;
         switch (radiovalue) {
@@ -59,7 +58,7 @@ function createForce(data, activeSec, radiovalue) {
 
     node.append("circle")
         .attr("id", (d) => ("circle-" + _.kebabCase(d.name)))
-        .attr("class", (d) => (_.includes(activeSec, d.name) ? 'nodes-selected' : ''))
+        .attr("class", (d) => ('circle-nodes' + (_.includes(activeSec, d.name) ? ' nodes-selected' : '')))
         .attr("r", (d) => (sizeScale(d.count) - .75))
         .attr("style", "cursor:pointer")
         .attr("fill", '#98df8a');
@@ -138,6 +137,9 @@ function createForce(data, activeSec, radiovalue) {
             $( '#circle-' + _.kebabCase(sector) ).addClass( 'nodes-selected' );
         } else if (state == 'remove') {
             $( '#circle-' + _.kebabCase(sector) ).removeClass( 'nodes-selected' );
+        } else if (state == 'write') {
+            $( '.circle-nodes' ).removeClass( 'nodes-selected' );
+            $( '#circle-' + _.kebabCase(sector) ).addClass( 'nodes-selected' );
         }
     });
 }

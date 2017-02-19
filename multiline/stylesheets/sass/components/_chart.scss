@@ -1,0 +1,73 @@
+
+#chart-container {
+    // height: calc(100% - #{$swimlane-height});  width: 100%; border-bottom: 1px solid lightgray;
+    width: 100%; @include clearfix();
+    border-bottom: 1px solid lightgray;
+
+    #filter-wrapper {
+        overflow-x: hidden;
+        overflow-y: auto;
+        border-right: 1px solid lightgray;
+        width: 349px; display: inline-block; float: left;
+        #filter-container {
+            width: calc(100% - 30px); padding: 15px;
+            .filter-section {
+                margin-bottom: 15px;
+                .filter-head {
+                    font-size: 14px; font-weight: bolder; margin: 5px 0px;
+                }
+                &#filter-date {
+                    input { border-radius: 5px; padding: 5px; -webkit-appearance: none; -moz-appearance: none; text-align: center; }
+                }
+                &#filter-datatype {
+                    #types-container {
+                        div.type-button {
+                            border: 1px solid; padding: 5px 10px; font-size: 12px; border-radius: 15px; margin: 0px 5px; display: inline-block;
+                            &.type-active { background: $swimlane-color; color: whitesmoke; }
+                        }
+                    }
+                }
+                &#filter-frequency {
+                    #frequency-container {
+                        div.freq-button {
+                            border: 1px solid; padding: 5px 15px; font-size: 12px; border-radius: 15px; margin: 0px 2.5px; display: inline-block; color: white;
+                            &.freq-unactive { background: none!important; color: black; }
+                        }
+                    }
+                }
+                &#filter-dataset {
+                    #datasets-container {
+                        div.data-button {
+                            border: 1px solid; padding: 5px 10px; font-size: 12px; border-radius: 15px; margin: 0px 5px; display: inline-block;
+                            max-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    #stacked-container {
+        width: calc(100% - 350px); display: inline-block; float: right;
+        // #radio-container {
+        //     width: 60%; text-align: left; padding: 10px 0px 15px 0px; font-size: 12px; display: inline-block; float: right;
+        //     & > label { margin: 0px 15px; }
+        // }
+        #stacked-svg {
+            .fill-none {
+                fill : transparent!important;
+            }
+
+            #legend-group {
+                rect { width: 18px; height: 18px; cursor: pointer; }
+            }
+
+            #zoom-pane {
+                fill: none;
+                pointer-events: all;
+                cursor: -webkit-grab;
+            }
+        }
+    }
+
+}

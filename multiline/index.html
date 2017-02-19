@@ -16,18 +16,39 @@
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/async/2.1.4/async.min.js"></script>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.3/lodash.min.js"></script>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.17.1/moment.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/spin.js/2.3.2/spin.min.js"></script>
+
+    <script>$( function() { $( document ).tooltip(); } );</script>
 
     <title>A Dashboard</title>
 </head>
 <body>
     <div id="root">
+        <div id="spinnerOverlay"></div>
         <div id="wrapper">
             <div id="chart-container">
-                <div id="stacked-container">
-                    <div id="date-container">
-                        <input type="text" id="startpicker"> - <input type="text" id="endpicker">
+                <div id="filter-wrapper">
+                    <div id="filter-container">
+                        <div id="filter-date" class="filter-section">
+                            <div class="filter-head">Time filter</div>
+                            <input type="text" id="startpicker"> - <input type="text" id="endpicker">
+                        </div>
+                        <div id="filter-datatype" class="filter-section">
+                            <div class="filter-head">Type filter</div>
+                            <div id="types-container"></div>
+                            <!-- <form id="radio-container"></form> -->
+                        </div>
+                        <div id="filter-frequency" class="filter-section">
+                            <div class="filter-head">Frequency filter</div>
+                            <div id="frequency-container"></div>
+                        </div>
+                        <div id="filter-dataset" class="filter-section">
+                            <div class="filter-head">List datasets</div>
+                            <div id="datasets-container"></div>
+                        </div>
                     </div>
-                    <form id="radio-container"></form>
+                </div>
+                <div id="stacked-container">
                     <div id="stacked-chart"/></div>
                 </div>
             </div>

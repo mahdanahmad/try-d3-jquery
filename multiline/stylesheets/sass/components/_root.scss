@@ -1,24 +1,17 @@
 @import "tagselector";
-@import "chart/chart";
+@import "chart";
 
 #wrapper { height: 100%; margin: 0px; padding: 0px; overflow: hidden; }
-#tagselector-changer {
-    position: relative;
-    left: 20px;
-    font-size: 12px;
-    cursor: pointer;
-    display: inline-block;
-    padding: 5px;
-    border: 1px solid;
-    border-radius: 5px;
-}
 #graph-container {
     display: inline-block; float: left;
 }
 #swimlane-container {
     display: inline-block; float: right;
 }
-#date-container {
-    display: inline-block; position: absolute; top: 0px; left: 0px; padding: 10px 5px 10px 30px;
-    input { border-radius: 5px; padding: 5px; -webkit-appearance: none; -moz-appearance: none; text-align: center; }
+#spinnerOverlay {
+    width: 100%;
+    height: 100%;
+    background: #E9EEF2;
+    z-index: 28;
+    // display: none;
 }
