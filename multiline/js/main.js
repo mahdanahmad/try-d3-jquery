@@ -29,7 +29,7 @@ $(' #tagselector-container ').on('sector-change', (event, state, sector) => {
         createSwimlane(rangeData, activeSec, activeFreq, startDate, endDate);
     }
 
-    $(' #datasets-container ').html(_.chain(rangeData).filter((o) => (_.intersection(o.t, activeSec).length > 0)).map((o, idx) => ("<div id='data-" + _.kebabCase(o.n) + "' class='data-button noselect cursor-default' title='" + o.n + "'>" + o.n + "</div>")).value());
+    drawListDataset();
 
     createStacked(_.filter(rangeData, (o) => (_.intersection(activeSec, o.t).length > 0)), filter.type, frequencies, activeFreq, startDate, endDate, freqColors);
 });
@@ -75,6 +75,18 @@ $(document).on('click', '#button-changer', (e) => {
         $(' #button-changer ').html('See datasets');
     }
 });
+
+function drawListDataset() {
+    $(' #datasets-container ').html(
+        _.chain(rangeData).filter((o) => (_.intersection(o.t, activeSec).length > 0)).map((o, idx) => (
+            "<div id='data-" + _.kebabCase(o.n) + "' class='data-container noselect cursor-default'>" +
+                "<div class='data-title'>" + o.n + "</div>" +
+                "<div class='data-tags'>" + _.chain(o.t).intersection(activeSec).map((t) => ("<div class='data-tag'>" + t + "</div>")).sortBy(_.size).value().join('') + "</div>" +
+                "<div class='data-connect'></div>" +
+             "</div>"
+        )).value()
+    );
+}
 
 window.onload   = function() {
     let spinner     = new Spinner().spin(document.getElementById('root'));
@@ -132,7 +144,7 @@ window.onload   = function() {
         createSwimlane(rangesets.value(), activeSec, activeFreq, startDate, endDate);
         createStacked(_.filter(rangesets.value(), (o) => (_.intersection(activeSec, o.t).length > 0)), filter.type, frequencies, activeFreq, startDate, endDate, freqColors);
 
-        $(' #datasets-container ').html(_.chain(rangeData).filter((o) => (_.intersection(o.t, activeSec).length > 0)).map((o, idx) => ("<div id='data-" + _.kebabCase(o.n) + "' class='data-button noselect cursor-default' title='" + o.n + "'>" + o.n + "</div>")).value());
+        drawListDataset();
 
         $(' #spinnerOverlay ').hide();
         spinner.stop();

@@ -25,10 +25,30 @@
         #datasets-wrapper {
             display: none; overflow-x: hidden; overflow-y: auto; position: relative; top: 35px;
             #datasets-container {
-                width: calc(100% - 20px); padding: 0px 10px 10px;
-                div.data-button {
-                    border: 1px solid; padding: 5px 10px; font-size: 12px; border-radius: 15px; margin: 5px 5px; display: inline-block;
-                    max-width: 225px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+                width: calc(100% - 20px); padding: 0px 15px 10px; @include clearfix();
+                // div.data-button {
+                    // border: 1px solid; padding: 5px 10px; font-size: 12px; border-radius: 15px; margin: 5px 5px; display: inline-block;
+                    // max-width: 225px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+
+                // }
+                div.data-container {
+                    width: 100%; position: relative; @include clearfix();
+                    div.data-title {
+                        font-size: 14px; max-width: 40%; display: inline-block; float: left;
+                        position: absolute; top: calc(50% - 14px);
+                        background: white; padding-right: 10px;
+                    }
+                    div.data-tags {
+                        font-size: 12px; max-width: 55%; display: inline-block; float: right;
+                        background: white; 
+                        div.data-tag {
+                            border: 1px solid; padding: 5px 10px; border-radius: 15px; margin: 5px 5px; display: inline-block; float: right;
+                            max-width: 225px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+                        }
+                    }
+                    div.data-connect {
+                        width: 100%; border-top: 2px dotted; position: absolute; top: calc(50% - 1px); z-index: -28;
+                    }
                 }
             }
         }
