@@ -35,24 +35,20 @@
                         }
                     }
                 }
-                &#filter-dataset {
-                    #datasets-container {
-                        div.data-button {
-                            border: 1px solid; padding: 5px 10px; font-size: 12px; border-radius: 15px; margin: 0px 5px; display: inline-block;
-                            max-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-                        }
-                    }
-                }
+                // &#filter-dataset {
+                //     #datasets-container {
+                //         div.data-button {
+                //             border: 1px solid; padding: 5px 10px; font-size: 12px; border-radius: 15px; margin: 0px 5px; display: inline-block;
+                //             max-width: 125px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+                //         }
+                //     }
+                // }
             }
         }
     }
 
     #stacked-container {
         width: calc(100% - 350px); display: inline-block; float: right;
-        // #radio-container {
-        //     width: 60%; text-align: left; padding: 10px 0px 15px 0px; font-size: 12px; display: inline-block; float: right;
-        //     & > label { margin: 0px 15px; }
-        // }
         #stacked-svg {
             .fill-none {
                 fill : transparent!important;

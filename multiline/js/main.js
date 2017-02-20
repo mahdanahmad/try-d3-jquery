@@ -62,6 +62,20 @@ $(document).on('click', '.freq-button', (e) => {
     createStacked(_.filter(rangeData, (o) => (_.intersection(activeSec, o.t).length > 0)), filter.type, frequencies, activeFreq, startDate, endDate, freqColors);
 });
 
+$(document).on('click', '#button-changer', (e) => {
+    if ($(' #swimlane-chart ').is(":visible")) {
+        $(' #swimlane-chart ').hide();
+        $(' #datasets-wrapper ').show();
+
+        $(' #button-changer ').html('See swimlane');
+    } else {
+        $(' #swimlane-chart ').show();
+        $(' #datasets-wrapper ').hide();
+
+        $(' #button-changer ').html('See datasets');
+    }
+});
+
 window.onload   = function() {
     let spinner     = new Spinner().spin(document.getElementById('root'));
 
@@ -76,6 +90,9 @@ window.onload   = function() {
     let untilPicker = $(' #endpicker ').datepicker(dateConfig);
 
     $(' #filter-wrapper ').height($(' #wrapper ').outerHeight(true) / 2);
+
+    $(' #datasets-wrapper ').width($(' #tagselector-container ').outerWidth(true) * 2 / 3);
+    $(' #datasets-wrapper ').height($(' #wrapper ').outerHeight(true) / 2 - 40);
 
     fromPicker.datepicker( 'setDate', moment().subtract(6, 'year').startOf('year').toDate() );
     untilPicker.datepicker( 'setDate', '0' );

@@ -13,19 +13,19 @@ function createSwimlane(data, activeSec, activeFreq, startDate, endDate) {
         let width       = ($(' #tagselector-container ').outerWidth(true) * 2 / 3) - padding.right - padding.left;
         let height      = ($(' #wrapper ').outerHeight(true) / 2) - padding.top - padding.bottom;
 
-        let axisHeight  = 20;
+        let axisHeight  = 25;
         let laneHeight  = 25;
         let sectorFont  = 10;
-        let sectorWidth = 125;
+        let sectorWidth = 135;
 
-        $(' #swimlane-container ').width(width);
-        $(' #swimlane-container ').height(height);
-        $(' #swimlane-container ').css('padding', padding.top + 'px ' + padding.right + 'px ' + padding.bottom + 'px ' + padding.left + 'px');
+        $(' #swimlane-chart ').width(width);
+        $(' #swimlane-chart ').height(height);
+        $(' #swimlane-chart ').css('padding', padding.top + 'px ' + padding.right + 'px ' + padding.bottom + 'px ' + padding.left + 'px');
 
         let d3DateParse = d3.timeParse(dateFormat);
         let x           = d3.scaleTime().domain([d3DateParse(startDate), d3DateParse(endDate)]).range([0, width - sectorWidth]);
 
-        let swimlane    = d3.select(' #swimlane-container ')
+        let swimlane    = d3.select(' #swimlane-chart ')
             .append('div')
             .attr('id', 'swimlane-canvas')
             .attr('width', width)
@@ -35,7 +35,7 @@ function createSwimlane(data, activeSec, activeFreq, startDate, endDate) {
             .attr('id', 'ceil-axis-container')
             .attr('style', 'width: ' + (width) + 'px; height: ' + axisHeight + 'px')
             .append('g')
-                .attr('transform', 'translate(' + sectorWidth + ', ' + (axisHeight - 2)  + ')')
+                .attr('transform', 'translate(' + sectorWidth + ', ' + (axisHeight - 5)  + ')')
                 .attr('class', 'ceil-axis-svg')
                 .attr('width', width - sectorWidth)
                 .attr('height', axisHeight)
