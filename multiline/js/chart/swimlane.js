@@ -7,8 +7,6 @@ function createSwimlane(data, activeSec, activeFreq, startDate, endDate) {
     if (activeLeft.length == 0) {
         $(' #tagselector-container ').trigger('sector-change', ['write', _.head(sectorsLeft)]);
     } else {
-        $(' #datasets-container ').html(_.map(datasets.flatMap('n').value(), (o, idx) => ("<div id='data-" + _.kebabCase(o) + "' class='data-button noselect cursor-default' title='" + o + "'>" + o + "</div>")));
-
         let sectors     = _.concat(activeLeft, sectorsLeft);
         let dateFormat  = "%Y-%m-%_d";
         let padding     = { top: 5, right: 15, bottom: 10, left: 15 };

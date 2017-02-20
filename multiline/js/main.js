@@ -29,6 +29,8 @@ $(' #tagselector-container ').on('sector-change', (event, state, sector) => {
         createSwimlane(rangeData, activeSec, activeFreq, startDate, endDate);
     }
 
+    $(' #datasets-container ').html(_.chain(rangeData).filter((o) => (_.intersection(o.t, activeSec).length > 0)).map((o, idx) => ("<div id='data-" + _.kebabCase(o.n) + "' class='data-button noselect cursor-default' title='" + o.n + "'>" + o.n + "</div>")).value());
+
     createStacked(_.filter(rangeData, (o) => (_.intersection(activeSec, o.t).length > 0)), filter.type, frequencies, activeFreq, startDate, endDate, freqColors);
 });
 
@@ -112,6 +114,8 @@ window.onload   = function() {
         createForce(rangesets.value(), activeSec, activeFreq, filter.type);
         createSwimlane(rangesets.value(), activeSec, activeFreq, startDate, endDate);
         createStacked(_.filter(rangesets.value(), (o) => (_.intersection(activeSec, o.t).length > 0)), filter.type, frequencies, activeFreq, startDate, endDate, freqColors);
+
+        $(' #datasets-container ').html(_.chain(rangeData).filter((o) => (_.intersection(o.t, activeSec).length > 0)).map((o, idx) => ("<div id='data-" + _.kebabCase(o.n) + "' class='data-button noselect cursor-default' title='" + o.n + "'>" + o.n + "</div>")).value());
 
         $(' #spinnerOverlay ').hide();
         spinner.stop();
