@@ -104,7 +104,7 @@ function fetchData(startDate, endDate, isForce, isSwimlane, isStacked, isRedraw,
     $.get( baseURL + 'selector', { frequencies : JSON.stringify(activeFreq), datatype : filter.type, startDate, endDate }, (response) => {
         tagChain    = _.chain(response.result).flatMap('tags').uniq();
 
-        if (tagChain.intersection(activeSec).size().value() == 0) { activeSec.push(tagChain.sortBy().head().value()); }
+        if (tagChain.intersection(activeSec).size().value() == 0) { activeSec = [tagChain.sortBy().head().value()]; }
 
         if (isForce) { createForce(response.result, activeSec); }
         if (isSwimlane) { createSwimlane(response.result, activeSec, startDate, endDate); }
