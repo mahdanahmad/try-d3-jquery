@@ -1,8 +1,8 @@
-function createSwimlane(data, activeSec, activeFreq, startDate, endDate) {
+function createSwimlane(data, activeSec, startDate, endDate) {
     d3.select(' #swimlane-canvas ').remove();
-    let datasets    = _.chain(data).map((o) => (_.assign({}, o, { d : _.filter(o.d, (d) => (_.includes(activeFreq, d.f))) }))).filter((o) => (o.d.length > 0));
-    let sectorsLeft = datasets.flatMap('t').uniq().difference(activeSec).sortBy().value();
-    let activeLeft  = datasets.flatMap('t').uniq().intersection(activeSec).sortBy().value();
+    let datasets    = _.chain(data).flatMap('tags').uniq();
+    let sectorsLeft = datasets.difference(activeSec).sortBy().value();
+    let activeLeft  = datasets.intersection(activeSec).sortBy().value();
 
     if (activeLeft.length == 0) {
         $(' #tagselector-container ').trigger('sector-change', ['write', _.head(sectorsLeft)]);
@@ -54,17 +54,16 @@ function createSwimlane(data, activeSec, activeFreq, startDate, endDate) {
                 .attr('id', 'floor-lane-svg');
 
         let swimlanePaths   = {};
-        datasets.groupBy('t').mapValues((o) => (_.chain(o).flatMap('d').value())).forEach((val, key) => {
-            let keys    = key.split(',');
-            _.forEach(val, (o) => {
-                _.forEach(keys, (k) => {
-                    if (_.isNil(swimlanePaths[k])) { swimlanePaths[k] = d3.path(); }
+        _.forEach(data, (o) => {
+            _.forEach(o.data, (d) => {
+                _.forEach(o.tags, (t) => {
+                    if (_.isNil(swimlanePaths[t])) { swimlanePaths[t] = d3.path(); }
 
-                    swimlanePaths[k].moveTo(sectorWidth + x(d3DateParse(moment(o.s).isAfter(startDate) ? o.s : startDate)), (laneHeight * 0.5));
-                    swimlanePaths[k].lineTo(sectorWidth + x(d3DateParse(moment(moment(o.e).isBefore(endDate) ? o.e : endDate).add(1, 'd').format('YYYY-MM-DD'))), (laneHeight * 0.5));
-                });
+                    swimlanePaths[t].moveTo(sectorWidth + x(d3DateParse(moment(d.s).isAfter(startDate) ? d.s : startDate)), (laneHeight * 0.5));
+                    swimlanePaths[t].lineTo(sectorWidth + x(d3DateParse(moment(moment(d.e).isBefore(endDate) ? d.e : endDate).add(1, 'd').format('YYYY-MM-DD'))), (laneHeight * 0.5));
+                })
             });
-        }).value();
+        });
 
         let separatorPath   = d3.path();
         _.forEach(sectors, (sector, idx) => {

@@ -1,20 +1,12 @@
-function createForce(data, activeSec, activeFreq, radiovalue) {
+function createForce(data, activeSec) {
     d3.select(' #graph-canvas ').remove();
-    let datasets    = _.chain(data).map((o) => (_.assign({}, o, { d : _.filter(o.d, (d) => (_.includes(activeFreq, d.f))) }))).filter((o) => (o.d.length > 0));
-    let nodeData    = datasets.flatMap((o) => (_.map(o.t, (tag) => {
-        let count   = 0;
-        switch (radiovalue) {
-            case 'rows': count = _.sumBy(o.d, 'r'); break;
-            case 'filesize': count = _.sumBy(o.d, 'z'); break;
-            default: count = _.size(o.d);
-        }
-        return { tag : tag, count : count };
-    }, []))).groupBy('tag').map((val, key) => ({name : key, count : _.sumBy(val, 'count')})).value();
-    let linkData    = datasets.map('t').uniqWith(_.isEqual).flatMap((tags) => (_.reduce(tags, (result, value) => {
+    let datasets    = _.chain(data);
+    let nodeData    = datasets.flatMap((o) => (_.map(o.tags, (tag) => ( { tag : tag, count : o.count } ), []))).groupBy('tag').map((val, key) => ({name : key, count : _.sumBy(val, 'count')})).value();
+    let linkData    = datasets.map('tags').flatMap((tags) => (_.reduce(tags, (result, value) => {
         let data    = [];
         if (_.size(result.tags) > 0) { _.forEach(result.tags, (o) => { data.push([o, value]); }); }
         return { data : _.concat((result['data'] || (result['data'] = [])), data), tags : _.concat(result['tags'] || (result['tags'] = []), value) };
-    }, {}))['data']).uniqWith(_.isEqual).map((o) => ({ source : o[0], target : o[1], count : datasets.filter((d) => (_.intersection(o, d).length > 0)).size().value() })).value();
+    }, {}))['data']).groupBy((o) => (o)).map((val, key) => ({ source : key.split(',')[0], target : key.split(',')[1], count : _.size(val) })).value();
 
     let radiusrange = [15, 35];
     let linkrange   = [35, 15];

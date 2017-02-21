@@ -4,21 +4,21 @@ let radio       = [
     { title : 'Filesize (in MB)', value : 'filesize' },
 ];
 
+let baseURL     = "http://localhost:3010/";
+
 let frequencies = [];
 let freqColors  = ['#BBCDA3', '#055C81', '#B13C3D', '#CCB40C', '#DA9F93'];
 let activeFreq  = [];
 let activeSec   = [];
-let rawData     = [];
-let rangeData   = [];
 let filter      = {
-    type        :  null
+    type        : null,
 }
 
 let exclude     = ['China'];
 
 $(' #tagselector-container ').on('sector-change', (event, state, sector) => {
-    let startDate   = $.datepicker.formatDate('yy-mm-dd', $(' #startpicker ').datepicker('getDate'));
-    let endDate     = $.datepicker.formatDate('yy-mm-dd', $(' #endpicker ').datepicker('getDate'));
+    let spinner     = new Spinner().spin(document.getElementById('root'));
+    $(' #spinnerOverlay ').show();
 
     if (state == 'add') {
         activeSec.push(sector);
@@ -29,23 +29,34 @@ $(' #tagselector-container ').on('sector-change', (event, state, sector) => {
         createSwimlane(rangeData, activeSec, activeFreq, startDate, endDate);
     }
 
-    drawListDataset();
-
-    createStacked(_.filter(rangeData, (o) => (_.intersection(activeSec, o.t).length > 0)), filter.type, frequencies, activeFreq, startDate, endDate, freqColors);
+    let startDate   = $.datepicker.formatDate('yy-mm-dd', $(' #startpicker ').datepicker('getDate'));
+    let endDate     = $.datepicker.formatDate('yy-mm-dd', $(' #endpicker ').datepicker('getDate'));
+    fetchData(startDate, endDate, false, false, true, true, () => {
+        $(' #spinnerOverlay ').hide();
+        spinner.stop();
+    });
 });
 
 $(document).on('click', '.type-button', (e) => {
+    let spinner     = new Spinner().spin(document.getElementById('root'));
+    $(' #spinnerOverlay ').show();
+
     filter.type     = $(e.target).attr('value');
     $(' .type-active ').removeClass('type-active');
     $('#type-' + filter.type).addClass('type-active');
 
     let startDate   = $.datepicker.formatDate('yy-mm-dd', $(' #startpicker ').datepicker('getDate'));
     let endDate     = $.datepicker.formatDate('yy-mm-dd', $(' #endpicker ').datepicker('getDate'));
-    createForce(rangeData, activeSec, activeFreq, filter.type);
-    createStacked(_.filter(rangeData, (o) => (_.intersection(activeSec, o.t).length > 0)), filter.type, frequencies, activeFreq, startDate, endDate, freqColors);
+    fetchData(startDate, endDate, true, false, true, false, () => {
+        $(' #spinnerOverlay ').hide();
+        spinner.stop();
+    });
 });
 
 $(document).on('click', '.freq-button', (e) => {
+    let spinner     = new Spinner().spin(document.getElementById('root'));
+    $(' #spinnerOverlay ').show();
+
     let selected    = _.toInteger($(e.target).attr('value'));
     if ($('#freq-' + selected).hasClass('freq-unactive')) {
         $('#freq-' + selected).removeClass('freq-unactive');
@@ -57,9 +68,10 @@ $(document).on('click', '.freq-button', (e) => {
 
     let startDate   = $.datepicker.formatDate('yy-mm-dd', $(' #startpicker ').datepicker('getDate'));
     let endDate     = $.datepicker.formatDate('yy-mm-dd', $(' #endpicker ').datepicker('getDate'));
-    createForce(rangeData, activeSec, activeFreq, filter.type);
-    createSwimlane(rangeData, activeSec, activeFreq, startDate, endDate);
-    createStacked(_.filter(rangeData, (o) => (_.intersection(activeSec, o.t).length > 0)), filter.type, frequencies, activeFreq, startDate, endDate, freqColors);
+    fetchData(startDate, endDate, true, true, true, true, () => {
+        $(' #spinnerOverlay ').hide();
+        spinner.stop();
+    });
 });
 
 $(document).on('click', '#button-changer', (e) => {
@@ -76,16 +88,38 @@ $(document).on('click', '#button-changer', (e) => {
     }
 });
 
-function drawListDataset() {
+function drawListDataset(data) {
     $(' #datasets-container ').html(
-        _.chain(rangeData).filter((o) => (_.intersection(o.t, activeSec).length > 0)).map((o, idx) => (
-            "<div id='data-" + _.kebabCase(o.n) + "' class='data-container noselect cursor-default'>" +
-                "<div class='data-title'>" + o.n + "</div>" +
-                "<div class='data-tags'>" + _.chain(o.t).intersection(activeSec).map((t) => ("<div class='data-tag'>" + t + "</div>")).sortBy(_.size).value().join('') + "</div>" +
+        _.chain(data).filter((o) => (_.intersection(o.tags, activeSec).length > 0)).map((o, idx) => (
+            "<div id='data-" + _.kebabCase(o._id) + "' class='data-container noselect cursor-default'>" +
+                "<div class='data-title'>" + o._id + "</div>" +
+                "<div class='data-tags'>" + _.chain(o.tags).intersection(activeSec).map((t) => ("<div class='data-tag'>" + t + "</div>")).sortBy(_.size).value().join('') + "</div>" +
                 "<div class='data-connect'></div>" +
              "</div>"
         )).value()
     );
+}
+
+function fetchData(startDate, endDate, isForce, isSwimlane, isStacked, isRedraw, callback) {
+    $.get( baseURL + 'selector', { frequencies : JSON.stringify(activeFreq), datatype : filter.type, startDate, endDate }, (response) => {
+        tagChain    = _.chain(response.result).flatMap('tags').uniq();
+
+        if (tagChain.intersection(activeSec).size().value() == 0) { activeSec.push(tagChain.sortBy().head().value()); }
+
+        if (isForce) { createForce(response.result, activeSec); }
+        if (isSwimlane) { createSwimlane(response.result, activeSec, startDate, endDate); }
+        if (isRedraw) { drawListDataset(response.result); }
+    }).always(() => {
+        if (isStacked) {
+            $.get( baseURL + 'stacked', { frequencies : JSON.stringify(activeFreq), tags : JSON.stringify(activeSec), datatype : filter.type, startDate, endDate }, (response) => {
+                createStacked(response.result, frequencies, freqColors);
+            }).always(() => {
+                callback();
+            });
+        } else {
+            callback();
+        }
+    });
 }
 
 window.onload   = function() {
@@ -123,9 +157,8 @@ window.onload   = function() {
         redrawOnDatepickerChange();
     });
 
-    $.getJSON('data/elnino-result.json', (result) => {
-        let resource    = _.chain(result).flatMap('d');
-        frequencies     = resource.map('f').uniq().sortBy(_.toInteger).value();
+    $.get( baseURL + 'config', (response) => {
+        frequencies     = response.result.frequency;
         activeFreq      = _.clone(frequencies);
 
         let stringFreq  = _.map(frequencies, (o, idx) => ("<div id='freq-" + o + "' class='freq-button noselect cursor-pointer' style='background : " + freqColors[idx] + "; border-color : " + freqColors[idx] + "' value='" + o + "'>" + o + "</div>"));
@@ -133,39 +166,22 @@ window.onload   = function() {
 
         let startDate   = $.datepicker.formatDate('yy-mm-dd', fromPicker.datepicker('getDate'));
         let endDate     = $.datepicker.formatDate('yy-mm-dd', untilPicker.datepicker('getDate'));
-
-        let datasets    = _.chain(result);
-        rawData         = datasets.filter((o) => (_.size(o.d) > 0)).value();
-        let rangesets   = _.chain(result).map((o) => ({ d : _.chain(o.d).filter((r) => (moment(r.e).isAfter(startDate) && moment(r.s).isBefore(endDate))).value(), g : o.g, n : o.n, t : o.t })).filter((o) => (_.size(o.d) > 0))
-        rangeData       = rangesets.value();
-        activeSec.push(rangesets.flatMap('t').uniq().sortBy().head().value());
-
-        createForce(rangesets.value(), activeSec, activeFreq, filter.type);
-        createSwimlane(rangesets.value(), activeSec, activeFreq, startDate, endDate);
-        createStacked(_.filter(rangesets.value(), (o) => (_.intersection(activeSec, o.t).length > 0)), filter.type, frequencies, activeFreq, startDate, endDate, freqColors);
-
-        drawListDataset();
-
-        $(' #spinnerOverlay ').hide();
-        spinner.stop();
+        fetchData(startDate, endDate, true, true, true, true, () => {
+            $(' #spinnerOverlay ').css('opacity', '0.7');
+            $(' #spinnerOverlay ').hide();
+            spinner.stop();
+        });
     });
 
     function redrawOnDatepickerChange() {
+        let spinner     = new Spinner().spin(document.getElementById('root'));
+        $(' #spinnerOverlay ').show();
+
         let startDate   = $.datepicker.formatDate('yy-mm-dd', $(' #startpicker ').datepicker('getDate'));
         let endDate     = $.datepicker.formatDate('yy-mm-dd', $(' #endpicker ').datepicker('getDate'));
-
-        let rangesets   = _.chain(rawData).map((o) => ({ d : _.chain(o.d).filter((r) => (moment(r.e).isAfter(startDate) && moment(r.s).isBefore(endDate))).value(), g : o.g, n : o.n, t : o.t })).filter((o) => (_.size(o.d) > 0))
-        rangeData       = rangesets.value();
-
-        sameSec         = rangesets.flatMap('t').uniq().intersection(activeSec).value();
-        if (sameSec.length > 0) {
-            activeSec   = sameSec;
-        } else {
-            activeSec   = [rangesets.flatMap('t').uniq().sortBy().head().value()];
-        }
-
-        createForce(rangesets.value(), activeSec, activeFreq, filter.type);
-        createSwimlane(rangesets.value(), activeSec, activeFreq, startDate, endDate);
-        createStacked(_.filter(rangesets.value(), (o) => (_.intersection(activeSec, o.t).length > 0)), filter.type, frequencies, activeFreq, startDate, endDate, freqColors);
+        fetchData(startDate, endDate, true, true, true, true, () => {
+            $(' #spinnerOverlay ').hide();
+            spinner.stop();
+        });
     }
 };
