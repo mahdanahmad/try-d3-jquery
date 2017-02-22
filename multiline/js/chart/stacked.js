@@ -4,8 +4,8 @@ function createStacked(data, keys, freqColors) {
 
     let legendHgt   = 0;
     let padding     = { top: 15, right: 15, bottom: 15, left: 30 };
-    let width       = $(' #stacked-container ').outerWidth(true) - padding.right - padding.left;
-    let height      = ($(' #wrapper ').outerHeight(true) / 2) - padding.top - padding.bottom - legendHgt;
+    let width       = Math.floor($(' #stacked-container ').outerWidth(true) - padding.right - padding.left);
+    let height      = Math.floor(($(' #wrapper ').outerHeight(true) / 2) - padding.top - padding.bottom - legendHgt);
 
     if (_.size(data.timeline) > 0) {
         let dateFormat  = "%Y-%m-%_d";
