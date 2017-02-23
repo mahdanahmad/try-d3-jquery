@@ -16,6 +16,9 @@ let filter      = {
 
 let exclude     = ['China'];
 
+let freqTimeout;
+let freqTime	= 1250;
+
 $(' #tagselector-container ').on('sector-change', (event, state, sector) => {
     let spinner     = new Spinner().spin(document.getElementById('root'));
     $(' #spinnerOverlay ').show();
@@ -54,8 +57,7 @@ $(document).on('click', '.type-button', (e) => {
 });
 
 $(document).on('click', '.freq-button', (e) => {
-    let spinner     = new Spinner().spin(document.getElementById('root'));
-    $(' #spinnerOverlay ').show();
+	clearTimeout(freqTimeout);
 
     let selected    = _.toInteger($(e.target).attr('value'));
     if ($('#freq-' + selected).hasClass('freq-unactive')) {
@@ -66,12 +68,18 @@ $(document).on('click', '.freq-button', (e) => {
         _.pull(activeFreq, selected);
     }
 
-    let startDate   = $.datepicker.formatDate('yy-mm-dd', $(' #startpicker ').datepicker('getDate'));
-    let endDate     = $.datepicker.formatDate('yy-mm-dd', $(' #endpicker ').datepicker('getDate'));
-    fetchData(startDate, endDate, true, true, true, true, () => {
-        $(' #spinnerOverlay ').hide();
-        spinner.stop();
-    });
+	freqTimeout	= setTimeout(() => {
+		let spinner     = new Spinner().spin(document.getElementById('root'));
+		$(' #spinnerOverlay ').show();
+
+		let startDate   = $.datepicker.formatDate('yy-mm-dd', $(' #startpicker ').datepicker('getDate'));
+		let endDate     = $.datepicker.formatDate('yy-mm-dd', $(' #endpicker ').datepicker('getDate'));
+		fetchData(startDate, endDate, true, true, true, true, () => {
+			$(' #spinnerOverlay ').hide();
+			spinner.stop();
+		});
+	}, freqTime);
+
 });
 
 $(document).on('click', '#button-changer', (e) => {
