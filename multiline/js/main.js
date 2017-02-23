@@ -18,7 +18,7 @@ let exclude     = ['China'];
 
 let freqTimeout, secTimeout;
 let freqTime	= 1000;
-let secTime		= 2000;
+let secTime		= 1750;
 
 $(' #tagselector-container ').on('sector-change', (event, state, sector) => {
     clearTimeout(secTimeout);
@@ -69,7 +69,7 @@ $(document).on('click', '.freq-button', (e) => {
     if ($('#freq-' + selected).hasClass('freq-unactive')) {
         $('#freq-' + selected).removeClass('freq-unactive');
         activeFreq.push(selected);
-    } else {
+    } else if (activeFreq.length > 1) {
         $('#freq-' + selected).addClass('freq-unactive');
         _.pull(activeFreq, selected);
     }
