@@ -16,12 +16,12 @@ let filter      = {
 
 let exclude     = ['China'];
 
-let freqTimeout;
-let freqTime	= 1250;
+let freqTimeout, secTimeout;
+let freqTime	= 1000;
+let secTime		= 2000;
 
 $(' #tagselector-container ').on('sector-change', (event, state, sector) => {
-    let spinner     = new Spinner().spin(document.getElementById('root'));
-    $(' #spinnerOverlay ').show();
+    clearTimeout(secTimeout);
 
     if (state == 'add') {
         activeSec.push(sector);
@@ -32,12 +32,18 @@ $(' #tagselector-container ').on('sector-change', (event, state, sector) => {
         createSwimlane(rangeData, activeSec, activeFreq, startDate, endDate);
     }
 
-    let startDate   = $.datepicker.formatDate('yy-mm-dd', $(' #startpicker ').datepicker('getDate'));
-    let endDate     = $.datepicker.formatDate('yy-mm-dd', $(' #endpicker ').datepicker('getDate'));
-    fetchData(startDate, endDate, false, false, true, true, () => {
-        $(' #spinnerOverlay ').hide();
-        spinner.stop();
-    });
+	secTimeout	= setTimeout(() => {
+		let spinner     = new Spinner().spin(document.getElementById('root'));
+		$(' #spinnerOverlay ').show();
+
+		let startDate   = $.datepicker.formatDate('yy-mm-dd', $(' #startpicker ').datepicker('getDate'));
+		let endDate     = $.datepicker.formatDate('yy-mm-dd', $(' #endpicker ').datepicker('getDate'));
+		fetchData(startDate, endDate, false, false, true, true, () => {
+			$(' #spinnerOverlay ').hide();
+			spinner.stop();
+		});
+	}, secTime);
+
 });
 
 $(document).on('click', '.type-button', (e) => {
