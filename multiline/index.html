@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet">
+    <!-- <link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet"> -->
 
     <link rel="shortcut icon" href="pulse.ico">
     <link rel="stylesheet" href="stylesheets/css/main.css">
@@ -26,43 +26,40 @@
     <div id="root">
         <div id="spinnerOverlay"></div>
         <div id="wrapper">
-            <div id="chart-container">
-                <div id="filter-wrapper">
-                    <div id="filter-container">
-                        <div id="filter-date" class="filter-section">
-                            <div class="filter-head">Time filter</div>
-                            <input type="text" id="startpicker"> - <input type="text" id="endpicker">
-                        </div>
-                        <div id="filter-datatype" class="filter-section">
-                            <div class="filter-head">Type filter</div>
-                            <div id="types-container"></div>
-                            <!-- <form id="radio-container"></form> -->
-                        </div>
-                        <div id="filter-frequency" class="filter-section">
-                            <div class="filter-head">Frequency filter</div>
-                            <div id="frequency-container"></div>
-                        </div>
-                        <!-- <div id="filter-dataset" class="filter-section">
-                            <div class="filter-head">List datasets</div>
-                            <div id="datasets-container"></div>
-                        </div> -->
-                    </div>
-                </div>
-                <div id="stacked-container">
-                    <div id="stacked-chart"/></div>
-                </div>
-            </div>
-            <div id="tagselector-container">
-                <div id="graph-container"></div>
-                <div id="swimlane-container">
+			<div id="sidebar-container">
+				<div id="sidebar-wrapper">
+					<div id="sidebar-title" class="noselect">
+						<i class="fa fa-home" aria-hidden="true"></i> Data Warehouse
+					</div>
+					<div id="sidebar-time">
+						<div class="filter-head noselect">Time filter</div>
+						<div id="timepicker-container">
+							<div id="time-value">
+								<input type="text" id="startpicker" class="cursor-pointer"><span class="cursor-default"> - </span><input type="text" id="endpicker" class="cursor-pointer">
+							</div>
+						</div>
+					</div>
+					<div id="graph-container"></div>
+					<div id="sidebar-datatype">
+						<div class="filter-head noselect">Type filter</div>
+						<div id="types-container"></div>
+					</div>
+					<div id="sidebar-frequency">
+						<div class="filter-head noselect">Frequency filter</div>
+						<div id="frequency-container"></div>
+					</div>
+				</div>
+			</div>
+			<div id="chart-container">
+				<div id="swimlane-container">
                     <div id="button-changer" class="noselect cursor-pointer">See datasets</div>
                     <div id="swimlane-chart"></div>
                     <div id="datasets-wrapper">
                         <div id="datasets-container"></div>
                     </div>
                 </div>
-            </div>
-            <!-- <div id="tagselector-changer" class="noselect"></div> -->
+				<div id="stacked-chart"/></div>
+			</div>
         </div>
     </div>
     <script type="text/javascript" src="js/helpers/randomizer.js"></script>

@@ -3,11 +3,23 @@
 
 @import "components/root";
 
+@font-face {
+    font-family: "TradeGothic-Bold";
+    src: url(/fonts/TradeGothic-Bold.ttf) format("truetype");
+}
+@font-face {
+    font-family: "TradeGothic-CondEighteen";
+    src: url(/fonts/TradeGothic-CondEighteen.ttf) format("truetype");
+}
+@font-face {
+    font-family: "TradeGothic-LightOblique";
+    src: url(/fonts/TradeGothic-LightOblique.ttf) format("truetype");
+}
 a { cursor: pointer; text-decoration: none; color: black; }
 ul { list-style-type: none; margin: 0px; padding: 0px; }
 img { max-width: 100%; height: auto; }
 textarea { resize: none; }
-body { font-family: 'Open Sans', sans-serif; }
+body { font-family: 'TradeGothic-CondEighteen'; }
 *:focus, select { outline: none!important; }
 .bold { font-weight: 700 !important; }
 .uppercase { text-transform: uppercase !important; }
@@ -25,4 +37,4 @@ body { font-family: 'Open Sans', sans-serif; }
     -ms-user-select: none;
     user-select: none;
 }
-html, body, #root { height: 100%; margin: 0px; padding: 0px; overflow: hidden; }
+html, body, #root { height: 100%; margin: 0px; padding: 0px; overflow: hidden; color: $def-font-color; }

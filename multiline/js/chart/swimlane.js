@@ -3,19 +3,20 @@ function createSwimlane(data, activeSec, startDate, endDate) {
     let datasets    = _.chain(data).flatMap('tags').uniq();
     let sectorsLeft = datasets.difference(activeSec).sortBy().value();
     let activeLeft  = datasets.intersection(activeSec).sortBy().value();
+	let localSec	= _.clone(activeLeft);
 
     if (activeLeft.length == 0) {
-        $(' #tagselector-container ').trigger('sector-change', ['write', _.head(sectorsLeft)]);
+        $(' #wrapper ').trigger('sector-change', ['write', _.head(sectorsLeft)]);
     } else {
         let sectors     = _.concat(activeLeft, sectorsLeft);
         let dateFormat  = "%Y-%m-%_d";
         let padding     = { top: 5, right: 15, bottom: 10, left: 15 };
-        let width       = ($(' #tagselector-container ').outerWidth(true) * 2 / 3) - padding.right - padding.left;
-        let height      = ($(' #wrapper ').outerHeight(true) / 2) - padding.top - padding.bottom;
+        let width       = Math.floor($(' #chart-container ').outerWidth(true)) - padding.right - padding.left;
+        let height      = Math.floor($(' #wrapper ').outerHeight(true) / 2) - padding.top - padding.bottom;
 
         let axisHeight  = 25;
         let laneHeight  = 25;
-        let sectorFont  = 10;
+        let sectorFont  = 14;
         let sectorWidth = 135;
 
         $(' #swimlane-chart ').width(width);
@@ -84,44 +85,55 @@ function createSwimlane(data, activeSec, startDate, endDate) {
             .text((d) => (d))
             .attr('class', 'lane-sector noselect cursor-default')
             .attr('x', 5)
-            .attr('y', 15)
+            .attr('y', 17)
             .style('font-size', sectorFont + 'px');
 
         groups.append('rect')
             .attr('id', (d) => ('select-' + _.kebabCase(d)))
-            .attr('class', (d) => ('floor-lane' + (_.includes(activeSec, d) ? ' floor-lane-selected' : '')))
+            // .attr('class', (d) => ('floor-lane' + (_.includes(activeSec, d) ? ' floor-lane-selected' : '')))
             .attr('fill', 'transparent')
             .attr('width', width)
             .attr('height', laneHeight);
 
-        groups.append('path').attr('d', (d) => (swimlanePaths[d].toString())).attr('class', 'swimlane-lane');
+        groups.append('path')
+			.attr('d', (d) => (swimlanePaths[d].toString()))
+			.attr('id', (d) => ('swimlane-' + _.kebabCase(d)))
+			.attr('class', (d) => ('swimlane-lane' + (_.includes(activeSec, d) ? ' swimlane-selected' : '')));
 
         groups.on('click', (o) => {
-            if ($( '#select-' + _.kebabCase(o) ).hasClass( 'floor-lane-selected' )) {
-                $( '#select-' + _.kebabCase(o) ).removeClass( 'floor-lane-selected' );
-                $(' #tagselector-container ').trigger('sector-change', ['remove', o]);
+            if ($( '#swimlane-' + _.kebabCase(o) ).hasClass( 'swimlane-selected' )) {
+                $( '#swimlane-' + _.kebabCase(o) ).removeClass( 'swimlane-selected' );
+                $(' #wrapper ').trigger('sector-change', ['remove', o]);
 
-                redrawOrder();
+                redrawOrder('remove', o);
             } else {
-                $( '#select-' + _.kebabCase(o) ).addClass( 'floor-lane-selected' );
-                $(' #tagselector-container ').trigger('sector-change', ['add', o]);
+                $( '#swimlane-' + _.kebabCase(o) ).addClass( 'swimlane-selected' );
+                $(' #wrapper ').trigger('sector-change', ['add', o]);
 
-                redrawOrder();
+                redrawOrder('add', o);
             }
         });
 
-        $(' #tagselector-container ').on('sector-change', (event, state, sector) => {
+        $(' #wrapper ').on('sector-change', (event, state, sector) => {
             if (state == 'add') {
-                $( '#select-' + _.kebabCase(sector) ).addClass( 'floor-lane-selected' );
-                redrawOrder();
+                $( '#swimlane-' + _.kebabCase(sector) ).addClass( 'swimlane-selected' );
+
+                redrawOrder(state, sector);
             } else if (state == 'remove') {
-                $( '#select-' + _.kebabCase(sector) ).removeClass( 'floor-lane-selected' );
-                redrawOrder();
+                $( '#swimlane-' + _.kebabCase(sector) ).removeClass( 'swimlane-selected' );
+
+                redrawOrder(state, sector);
             }
         });
 
-        function redrawOrder() {
-            _.chain(activeSec).sortBy().concat(_.chain(sectors).difference(activeSec).sortBy().value()).forEach((o, i) => {
+        function redrawOrder(state, sector) {
+			if (state == 'add') {
+				localSec	= _.chain(localSec).concat(sector).uniq().value();
+			} else if (state == 'remove') {
+				localSec	= _.chain(localSec).pull(sector).uniq().value();
+			}
+
+            _.chain(localSec).sortBy().concat(_.chain(sectors).difference(localSec).sortBy().value()).forEach((o, i) => {
                 d3.select('#group-' + _.kebabCase(o) ).attr('transform', ('translate(0,' + (i * laneHeight) + ')'));
             }).value()
         }

@@ -1,29 +1,12 @@
-$pulselab-color     : #00ADEF;
-$width-treshold     : 992px;
+$def-font-color	: #5c5d5f;
 
-$def-background     : $pulselab-color;
-$def-white          : #F1F3FA;
+$active-back	: #00adef;
+$active-color	: white;
+$unactive-bar	: #bfbfbf;
 
-$nav-width          : 300px;
-$nav-color          : #696a6c;
-$content-color      : $def-white;
+$sidebar-width	: 375px;
+$sidebar-color	: #ebedf1;
+$circle-color	: white;
 
-$filter-list-width  : 50px;
-$filter-icon-size   : 25px;
-$filter-min-height  : 600px;
-$filter-content-clr : #BBBBBB;
-$filter-type-clr    : #84a695;
-
-$line-chart-clr     : #738290;
-$line-center-clr    : #738290;
-$bar-clr-daily      : #BBCDA3;
-$bar-clr-weekly     : #055C81;
-$bar-clr-monthly    : #B13C3D;
-$bar-clr-yearly     : #CCB40C;
-
-$swimlane-height    : 200px;
-$swimlane-separator : lightgrey;
-$swimlane-color     : green;
-$swimlane-width     : 7;
-$swimlane-sel-clr   : #7C898B;
-$swimlane-sel-opac  : 0.4;
+$stacked-back	: #f7f8fa;
+$swim-delimiter	: #d3d3d3;

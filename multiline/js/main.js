@@ -5,9 +5,11 @@ let radio       = [
 ];
 
 let baseURL     = "http://139.59.230.55:3010/";
+// let baseURL     = "http://localhost:3010/";
 
 let frequencies = [];
-let freqColors  = ['#BBCDA3', '#055C81', '#B13C3D', '#CCB40C', '#DA9F93'];
+// let freqColors  = ['#BBCDA3', '#055C81', '#B13C3D', '#CCB40C', '#DA9F93'];
+let freqColors  = [];
 let activeFreq  = [];
 let activeSec   = [];
 let filter      = {
@@ -20,7 +22,7 @@ let freqTimeout, secTimeout;
 let freqTime	= 1000;
 let secTime		= 1750;
 
-$(' #tagselector-container ').on('sector-change', (event, state, sector) => {
+$(' #wrapper ').on('sector-change', (event, state, sector) => {
     clearTimeout(secTimeout);
 
     if (state == 'add') {
@@ -118,7 +120,11 @@ function fetchData(startDate, endDate, isForce, isSwimlane, isStacked, isRedraw,
     $.get( baseURL + 'selector', { frequencies : JSON.stringify(activeFreq), datatype : filter.type, startDate, endDate }, (response) => {
         tagChain    = _.chain(response.result).flatMap('tags').uniq();
 
-        if (tagChain.intersection(activeSec).size().value() == 0) { activeSec = [tagChain.sortBy().head().value()]; }
+        if (tagChain.intersection(activeSec).size().value() == 0) {
+			activeSec = [tagChain.sortBy().head().value()];
+		} else {
+			activeSec = tagChain.intersection(activeSec).value();
+		}
 
         if (isForce) { createForce(response.result, activeSec); }
         if (isSwimlane) { createSwimlane(response.result, activeSec, startDate, endDate); }
@@ -133,6 +139,7 @@ function fetchData(startDate, endDate, isForce, isSwimlane, isStacked, isRedraw,
         } else {
             callback();
         }
+		// callback();
     });
 }
 
@@ -151,7 +158,7 @@ window.onload   = function() {
 
     $(' #filter-wrapper ').height($(' #wrapper ').outerHeight(true) / 2);
 
-    $(' #datasets-wrapper ').width($(' #tagselector-container ').outerWidth(true) * 2 / 3);
+    $(' #datasets-wrapper ').width($(' #chart-container ').outerWidth(true));
     $(' #datasets-wrapper ').height($(' #wrapper ').outerHeight(true) / 2 - 40);
 
     fromPicker.datepicker( 'setDate', moment().subtract(6, 'year').startOf('year').toDate() );
@@ -173,9 +180,11 @@ window.onload   = function() {
 
     $.get( baseURL + 'config', (response) => {
         frequencies     = response.result.frequency;
-        activeFreq      = _.clone(frequencies);
+        activeFreq      = _.chain(response.result.frequency).drop().take(6).value();
 
-        let stringFreq  = _.map(frequencies, (o, idx) => ("<div id='freq-" + o + "' class='freq-button noselect cursor-pointer' style='background : " + freqColors[idx] + "; border-color : " + freqColors[idx] + "' value='" + o + "'>" + o + "</div>"));
+		freqColors		= _.times(frequencies.length, (o) => ('#' + Math.random().toString(16).substr(2,6)));
+
+        let stringFreq  = _.map(frequencies, (o, idx) => ("<div id='freq-" + o + "' class='freq-button noselect cursor-pointer" + (_.includes(activeFreq, o) ? '' : ' freq-unactive') + "' style='background : " + freqColors[idx] + "; border-color : " + freqColors[idx] + "; color : " + freqColors[idx] + "' value='" + o + "'>" + o + "</div>"));
         $(' #frequency-container ').append(stringFreq);
 
         let startDate   = $.datepicker.formatDate('yy-mm-dd', fromPicker.datepicker('getDate'));
