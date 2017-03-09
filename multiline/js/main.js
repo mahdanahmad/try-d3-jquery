@@ -4,8 +4,8 @@ let radio       = [
     { title : 'Filesize (in MB)', value : 'filesize' },
 ];
 
-let baseURL     = "http://139.59.230.55:3010/";
-// let baseURL     = "http://localhost:3010/";
+// let baseURL     = "http://139.59.230.55:3010/";
+let baseURL     = "http://localhost:3010/";
 
 let frequencies = [];
 // let freqColors  = ['#BBCDA3', '#055C81', '#B13C3D', '#CCB40C', '#DA9F93'];
@@ -104,43 +104,51 @@ $(document).on('click', '#button-changer', (e) => {
     }
 });
 
-function drawListDataset(data) {
-    $(' #datasets-container ').html(
-        _.chain(data).filter((o) => (_.intersection(o.tags, activeSec).length > 0)).map((o, idx) => (
-            "<div id='data-" + _.kebabCase(o._id) + "' class='data-container noselect cursor-default'>" +
-                "<div class='data-title'>" + o._id + "</div>" +
-                "<div class='data-tags'>" + _.chain(o.tags).intersection(activeSec).map((t) => ("<div class='data-tag'>" + t + "</div>")).sortBy(_.size).value().join('') + "</div>" +
-                "<div class='data-connect'></div>" +
-             "</div>"
-        )).value()
-    );
-}
-
 function fetchData(startDate, endDate, isForce, isSwimlane, isStacked, isRedraw, callback) {
-    $.get( baseURL + 'selector', { frequencies : JSON.stringify(activeFreq), datatype : filter.type, startDate, endDate }, (response) => {
-        tagChain    = _.chain(response.result).flatMap('tags').uniq();
+	async.waterfall([
+		function (waterfallCallback) {
+			$.get( baseURL + 'selector', { frequencies : JSON.stringify(activeFreq), datatype : filter.type, startDate, endDate }, (response) => {
+				tagChain    = _.chain(response.result).flatMap('tags').uniq();
 
-        if (tagChain.intersection(activeSec).size().value() == 0) {
-			activeSec = [tagChain.sortBy().head().value()];
-		} else {
-			activeSec = tagChain.intersection(activeSec).value();
-		}
+				if (tagChain.intersection(activeSec).size().value() == 0) {
+					activeSec = [tagChain.sortBy().head().value()];
+				} else {
+					activeSec = tagChain.intersection(activeSec).value();
+				}
 
-        if (isForce) { createForce(response.result, activeSec); }
-        if (isSwimlane) { createSwimlane(response.result, activeSec, startDate, endDate); }
-        if (isRedraw) { drawListDataset(response.result); }
-    }).always(() => {
-        if (isStacked) {
-            $.get( baseURL + 'stacked', { frequencies : JSON.stringify(activeFreq), tags : JSON.stringify(activeSec), datatype : filter.type, startDate, endDate }, (response) => {
-                createStacked(response.result, frequencies, freqColors);
-            }).always(() => {
-                callback();
-            });
-        } else {
-            callback();
-        }
-		// callback();
-    });
+				if (isForce) { createForce(response.result, activeSec); }
+				if (isSwimlane) { createSwimlane(response.result, activeSec, startDate, endDate); }
+				waterfallCallback(null, activeFreq, activeSec);
+			});
+		},
+		function (localFreq, localSec, waterfallCallback) {
+			if (isRedraw) {
+				$.get( baseURL + 'datasets', { frequencies : JSON.stringify(activeFreq), tags : JSON.stringify(activeSec) }, (response) => {
+					$(' #datasets-container ').html(
+						_.map(response.result, (o, idx) => (
+							"<div id='data-" + _.kebabCase(o.name) + "' class='data-container noselect cursor-default'>" +
+								"<div class='data-title'>" + o.name + "</div>" +
+								"<div class='data-tags'>" + _.chain(o.tags).map((t) => ("<div class='data-tag'>" + t + "</div>")).sortBy(_.size).value().join('') + "</div>" +
+								"<div class='data-connect'></div>" +
+							"</div>"
+						)).join(''));
+					waterfallCallback(null, activeFreq, activeSec);
+				});
+			} else {
+				waterfallCallback(null, activeFreq, activeSec);
+			}
+		},
+		function (localFreq, localSec, waterfallCallback) {
+			if (isStacked) {
+				$.get( baseURL + 'stacked', { frequencies : JSON.stringify(activeFreq), tags : JSON.stringify(activeSec), datatype : filter.type, startDate, endDate }, (response) => {
+					createStacked(response.result, frequencies, freqColors);
+					waterfallCallback(null);
+				});
+			} else {
+				waterfallCallback(null);
+			}
+		},
+	], (err) => { callback(); });
 }
 
 window.onload   = function() {
