@@ -40,7 +40,8 @@ $(' #wrapper ').on('sector-change', (event, state, sector) => {
 
 		let startDate   = $.datepicker.formatDate('yy-mm-dd', $(' #startpicker ').datepicker('getDate'));
 		let endDate     = $.datepicker.formatDate('yy-mm-dd', $(' #endpicker ').datepicker('getDate'));
-		fetchData(startDate, endDate, false, false, true, true, () => {
+		let numtags		= $( '#numtags-container' ).slider( 'value' );
+		fetchData(numtags, startDate, endDate, false, false, true, true, () => {
 			$(' #spinnerOverlay ').hide();
 			spinner.stop();
 		});
@@ -58,7 +59,8 @@ $(document).on('click', '.type-button', (e) => {
 
     let startDate   = $.datepicker.formatDate('yy-mm-dd', $(' #startpicker ').datepicker('getDate'));
     let endDate     = $.datepicker.formatDate('yy-mm-dd', $(' #endpicker ').datepicker('getDate'));
-    fetchData(startDate, endDate, true, false, true, false, () => {
+	let numtags		= $( '#numtags-container' ).slider( 'value' );
+	fetchData(numtags, startDate, endDate, true, false, true, false, () => {
         $(' #spinnerOverlay ').hide();
         spinner.stop();
     });
@@ -82,7 +84,8 @@ $(document).on('click', '.freq-button', (e) => {
 
 		let startDate   = $.datepicker.formatDate('yy-mm-dd', $(' #startpicker ').datepicker('getDate'));
 		let endDate     = $.datepicker.formatDate('yy-mm-dd', $(' #endpicker ').datepicker('getDate'));
-		fetchData(startDate, endDate, true, true, true, true, () => {
+		let numtags		= $( '#numtags-container' ).slider( 'value' );
+		fetchData(numtags, startDate, endDate, true, true, true, true, () => {
 			$(' #spinnerOverlay ').hide();
 			spinner.stop();
 		});
@@ -104,10 +107,10 @@ $(document).on('click', '#button-changer', (e) => {
     }
 });
 
-function fetchData(startDate, endDate, isForce, isSwimlane, isStacked, isRedraw, callback) {
+function fetchData(numtags, startDate, endDate, isForce, isSwimlane, isStacked, isRedraw, callback) {
 	async.waterfall([
 		function (waterfallCallback) {
-			$.get( baseURL + 'selector', { frequencies : JSON.stringify(activeFreq), datatype : filter.type, startDate, endDate }, (response) => {
+			$.get( baseURL + 'selector', { frequencies : JSON.stringify(activeFreq), datatype : filter.type, startDate, endDate, numtags }, (response) => {
 				tagChain    = _.chain(response.result).flatMap('tags').uniq();
 
 				if (tagChain.intersection(activeSec).size().value() == 0) {
@@ -186,6 +189,28 @@ window.onload   = function() {
         redrawOnDatepickerChange();
     });
 
+	let numtagsValue	= 20;
+	$( '#numtags-container' ).slider({
+		value: numtagsValue,
+		orientation: "horizontal",
+      	range: "min",
+		max:100,
+		min:1,
+		create: () => { $( '#numtags-handle' ).text( numtagsValue ); },
+		slide: ( event, ui ) => { $( '#numtags-handle' ).text( ui.value ); },
+		stop: ( event, ui ) => {
+			let spinner     = new Spinner().spin(document.getElementById('root'));
+			$(' #spinnerOverlay ').show();
+
+			let startDate   = $.datepicker.formatDate('yy-mm-dd', $(' #startpicker ').datepicker('getDate'));
+			let endDate     = $.datepicker.formatDate('yy-mm-dd', $(' #endpicker ').datepicker('getDate'));
+			fetchData(ui.value, startDate, endDate, true, true, true, true, () => {
+				$(' #spinnerOverlay ').hide();
+				spinner.stop();
+			});
+		}
+    });
+
     $.get( baseURL + 'config', (response) => {
         frequencies     = response.result.frequency;
         activeFreq      = _.chain(response.result.frequency).drop().take(6).value();
@@ -197,7 +222,8 @@ window.onload   = function() {
 
         let startDate   = $.datepicker.formatDate('yy-mm-dd', fromPicker.datepicker('getDate'));
         let endDate     = $.datepicker.formatDate('yy-mm-dd', untilPicker.datepicker('getDate'));
-        fetchData(startDate, endDate, true, true, true, true, () => {
+		let numtags		= $( '#numtags-container' ).slider( 'value' );
+		fetchData(numtags, startDate, endDate, true, true, true, true, () => {
             $(' #spinnerOverlay ').css('opacity', '0.7');
             $(' #spinnerOverlay ').hide();
             spinner.stop();
@@ -210,7 +236,8 @@ window.onload   = function() {
 
         let startDate   = $.datepicker.formatDate('yy-mm-dd', $(' #startpicker ').datepicker('getDate'));
         let endDate     = $.datepicker.formatDate('yy-mm-dd', $(' #endpicker ').datepicker('getDate'));
-        fetchData(startDate, endDate, true, true, true, true, () => {
+		let numtags		= $( '#numtags-container' ).slider( 'value' );
+		fetchData(numtags, startDate, endDate, true, true, true, true, () => {
             $(' #spinnerOverlay ').hide();
             spinner.stop();
         });

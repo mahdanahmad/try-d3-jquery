@@ -18,7 +18,7 @@
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.17.1/moment.min.js"></script>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/spin.js/2.3.2/spin.min.js"></script>
 
-    <script>$( function() { $( document ).tooltip(); } );</script>
+    <!-- <script>$( function() { $( document ).tooltip(); } );</script> -->
 
     <title>A Dashboard</title>
 </head>
@@ -37,6 +37,12 @@
 							<div id="time-value">
 								<input type="text" id="startpicker" class="cursor-pointer"><span class="cursor-default"> - </span><input type="text" id="endpicker" class="cursor-pointer">
 							</div>
+						</div>
+					</div>
+					<div id="sidebar-numtags">
+						<div class="filter-head noselect">Number of Tags filter</div>
+						<div id="numtags-container">
+							<div id="numtags-handle" class="ui-slider-handle noselect"></div>
 						</div>
 					</div>
 					<div id="graph-container"></div>
