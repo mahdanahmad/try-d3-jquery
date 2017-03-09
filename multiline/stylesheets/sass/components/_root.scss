@@ -64,17 +64,13 @@
 				display: none; overflow-x: hidden; overflow-y: auto; position: relative; top: 35px;
 				#datasets-container {
 					width: calc(100% - 20px); padding: 0px 15px 10px; @include clearfix();
-					// div.data-button {
-					// border: 1px solid; padding: 5px 10px; font-size: 12px; border-radius: 15px; margin: 5px 5px; display: inline-block;
-					// max-width: 225px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-
-					// }
 					div.data-container {
 						width: 100%; position: relative; @include clearfix();
 						div.data-title {
 							font-size: 14px; max-width: 40%; display: inline-block; float: left;
 							position: absolute; top: calc(50% - 14px);
 							background: white; padding-right: 10px;
+							span { font-weight: bolder; font-size: 16px; }
 						}
 						div.data-tags {
 							font-size: 12px; max-width: 55%; display: inline-block; float: right;

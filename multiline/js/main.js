@@ -127,7 +127,7 @@ function fetchData(startDate, endDate, isForce, isSwimlane, isStacked, isRedraw,
 					$(' #datasets-container ').html(
 						_.map(response.result, (o, idx) => (
 							"<div id='data-" + _.kebabCase(o.name) + "' class='data-container noselect cursor-default'>" +
-								"<div class='data-title'>" + o.name + "</div>" +
+								"<div class='data-title'><span>" + o.name + ".</span> Freq: " + o.frequency.join(',') + "</div>" +
 								"<div class='data-tags'>" + _.chain(o.tags).map((t) => ("<div class='data-tag'>" + t + "</div>")).sortBy(_.size).value().join('') + "</div>" +
 								"<div class='data-connect'></div>" +
 							"</div>"
